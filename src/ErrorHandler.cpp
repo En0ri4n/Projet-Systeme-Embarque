@@ -2,8 +2,8 @@
 
 void error(byte errorType)
 {
-    while(1)
-        handleError(errorType);
+    // while(1)
+    //     handleError(errorType);
 }
 
 void handleError(byte errorType)

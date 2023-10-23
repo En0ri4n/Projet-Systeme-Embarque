@@ -19,7 +19,7 @@ void configLoop()
         {
             int month = Serial.readStringUntil(',').toInt();
             int day = Serial.readStringUntil(',').toInt();
-            int year = Serial.readStringUntil('\n').toInt() - 2000; // We store the year as 2000 -> 0, so to stay clear we substract 2000 from the user's input
+            int year = Serial.readStringUntil('\n').toInt();
             clock.fillByYMD(year, month, day);
             return;
         }

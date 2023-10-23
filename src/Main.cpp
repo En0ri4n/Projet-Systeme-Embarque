@@ -1,9 +1,9 @@
 #include "Headers.hpp"
 
-SoftwareSerial SoftSerial(8, 9);  // Serial already used for serial communication GPS connected on D8 port on Grove Shield
+SoftwareSerial SoftSerial(SOFT_SERIAL_RECEIVE_PIN, SOFT_SERIAL_TRANSMIT_PIN);  // Serial already used for serial communication GPS connected on D8 port on Grove Shield
 DS1307 clock;                     // Define a object of DS1307 class RTC Clock on I2C port on Grove Shield
-ChainableLED leds(6, 7, 1);       // 1 LED defined to pin 6 and 7
-Adafruit_BME280 bme;
+ChainableLED leds(LED_CLOCK_PIN, LED_DATA_PIN, 1);       // 1 LED defined to pin 6 and 7
+ForcedClimate bmeSensor = ForcedClimate();
 
 byte errorType = NO_ERROR;
 
@@ -36,44 +36,38 @@ unsigned short pressureMax = DEFAULT_MAX_PRESSURE;
 byte currentDay;
 unsigned int fileRev = 1;
 
-unsigned long lastMeasure;
+unsigned long lastMeasure = 1000;
 
 String gpsData;
 bool shouldReadGPSData;
 
 void setup()
 {
-  Serial.begin(9600); // Open serial port
+  Serial.begin(SERIAL_PORT_RATE); // Open serial port
   while (!Serial);    // Wait for serial port to connect. Needed for native USB port only
 
   leds.init(); // Initialize LEDs (needed before anything else because it will shows errors)
 
-  if (!bme.begin(BME280_SENSOR_PIN)) // Initialize BME280 Sensor
-      error(SENSOR_ACCESS_ERROR);
+  bmeSensor.begin(); // Initialize BME280 Sensor
 
   if(!SD.begin(SD_CARD_PIN)) // Initialize SD Card
       error(SD_CARD_ACCESS_ERROR);
 
-  SoftSerial.begin(9600); // Open SoftwareSerial for GPS
+  SoftSerial.begin(SERIAL_PORT_RATE); // Open SoftwareSerial for GPS
 
   //Initialize Clock
   clock.begin();
-  clock.fillByYMD(23, 11, currentDay = 15);  // 15 Nov 23
-  clock.fillByHMS(16, 30, 0);     // 16:30:00"
-  clock.fillDayOfWeek(SAT);       // Sunday
-  clock.setTime();                // Write time to the RTC chip
+  clock.fillByYMD(2023, 11, currentDay = 15);   // 15 Nov 23
+  clock.fillByHMS(16, 30, 0);                 // 16:30:00"
+  clock.fillDayOfWeek(SAT);                   // Sunday
+  clock.setTime();                            // Write time to the RTC chip
 
   pinMode(GREEN_BUTTON_PIN, INPUT);
   pinMode(RED_BUTTON_PIN, INPUT);
 
   initializeInterruptions();
 
-  mode = digitalRead(RED_BUTTON_PIN) == LOW ? CONFIG_MODE : STANDARD_MODE;
-
-  if(mode == CONFIG_MODE)
-    setLed(GREEN);
-  else
-    setLed(YELLOW);
+  changeMode(digitalRead(RED_BUTTON_PIN) == LOW ? CONFIG_MODE : STANDARD_MODE);
 }
 
 void loop()
@@ -84,14 +78,14 @@ void loop()
     return;
   }
 
-  if(millis() - lastMeasure < logInterval * 60 * 1000)
+  if(millis() - lastMeasure < (mode == ECO_MODE ? 2 : 1) * logInterval * 60 * 1000)
     return;
 
   lastMeasure = millis();
 
   clock.getTime(); // Read time from RTC Clock
 
-  String dataString = formatTime(clock.hour, clock.minute, clock.second, ':');
+  String dataString = formatTime(clock.hour, clock.minute, clock.second, ':') + "; ";
   
   // Luminosity captor reading
   if(isLuminSensorActive)
@@ -104,7 +98,7 @@ void loop()
 
   if(isTempSensorActive)
   {
-    temperature = bme.readTemperature();
+    temperature = bmeSensor.getTemperatureCelcius();
 
     if(temperature < tempMin || temperature > tempMax)
       error(INCONSISTENT_SENSOR_DATA_ERROR);
@@ -114,13 +108,13 @@ void loop()
 
   if(isHygrSensorActive && (temperature < hygrTempMin || temperature > hygrTempMax))
   {
-    float humidity = bme.readHumidity();
+    float humidity = bmeSensor.getRelativeHumidity();
     dataString += String(humidity) + " ; ";
   }
 
   if(isPressureSensorActive)
   {
-    float pressure = bme.readPressure() / 100.0F;
+    float pressure = bmeSensor.getPressure();
 
     if(pressure < pressureMin || pressure > pressureMax)
       error(INCONSISTENT_SENSOR_DATA_ERROR);
@@ -128,17 +122,23 @@ void loop()
     dataString += String(pressure) + " ; ";
   }
 
-  float altitude = bme.readAltitude(SEALEVELPRESSURE);
-
-  dataString += String(altitude) + " ; ";
+  // float altitude = bmeSensor.readCalibrationData()
+  // dataString += String(altitude) + " ; ";
   
   // GPS Reading
   gpsData = "";
-  if(SoftSerial.available()) // if data is coming from software serial port ==> data is coming from SoftSerial GPS
+
+  if(mode == ECO_MODE)
+    shouldReadGPSData = !shouldReadGPSData;
+    
+  if(SoftSerial.available() && shouldReadGPSData) // if data is coming from software serial port ==> data is coming from SoftSerial GPS
   {
     do
       gpsData = SoftSerial.readStringUntil('\n');
     while(!gpsData.startsWith("$GPGGA", 0)); // We need to find the good part of available data
+  
+   if(!gpsData.startsWith("$GPGGA"))
+      error(GPS_ACCESS_ERROR);
   }
 
   dataString += gpsData;
@@ -150,6 +150,8 @@ void loop()
   }
 
   File dataFile = SD.open(getFilename(0), FILE_WRITE);
+
+  Serial.println(getFilename(0));
 
   if(dataFile.size() >= maxFileSize)
   {
@@ -185,9 +187,29 @@ String getFilename(int rev)
 {
   clock.getTime();
   if(currentDay != clock.dayOfMonth) // Checks if day has changed, to reset file revision
+  {
     fileRev = 0;
+    currentDay = clock.dayOfMonth;
+  }
 
-  return format(clock.year) + format(clock.month) + format(clock.dayOfMonth) + "_" + String(rev) + ".log";
+  return getFolder() + "/" + format(clock.year) + format(clock.month) + format(clock.dayOfMonth) + "_" + String(rev) + ".log";
+}
+
+String getFolder()
+{
+  String folder = "/" + format(clock.dayOfMonth) + format(clock.month) + format(clock.year);
+
+  if(!SD.exists(folder))
+    SD.mkdir(folder);
+  
+  return folder;
+}
+
+void changeMode(byte newMode)
+{
+  mode = newMode;
+  setLed(getColor(mode));
+  shouldReadGPSData = true;
 }
 
 String format(unsigned short a)

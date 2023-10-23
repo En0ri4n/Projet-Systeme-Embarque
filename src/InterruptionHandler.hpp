@@ -1,3 +1,5 @@
+#define DEBOUNCE_TIME 100 // in ms
+
 /*
  * Interruptions variables
 */
@@ -9,3 +11,4 @@ extern bool redFlag;
 void initializeInterruptions();
 void greenInterrupt();
 void redInterrupt();
+float getColor(byte mode);
