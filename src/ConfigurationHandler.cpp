@@ -1,38 +1,61 @@
 #include "Headers.hpp"
 
+unsigned long lastSet;
+String parameterName;
+String value;
+
 void configLoop()
 {
+    if(millis() - lastSet > IDLE_TIME_BEFORE_EXIT * 60 * 1000)
+    {
+        changeMode(STANDARD_MODE);
+        return;
+    }
+    
     if(Serial.available() > 0)
     {
-        String parameter = Serial.readStringUntil('=');
+        String str = Serial.readStringUntil('\n');
+        str = str.substring(0, str.length() - 1);
+        short equalIndex = str.indexOf('=');
+
+        if(equalIndex < 0)
+        {
+            if(str == ("VERSION"))
+                Serial.println(VERSION);
+            else if(str == ("RESET"))
+                initializeData();
+            else if(str == ("EXIT"))
+                changeMode(STANDARD_MODE);
+            
+            return;
+        }
+
+        parameterName = str.substring(0, equalIndex);
+        value = str.substring(equalIndex + 1, str.length());
 
         // We need to do special case for time, because all others parameters are integer
-        if(parameter == ("CLOCK"))
+        if(parameterName == ("CLOCK") || parameterName == ("DATE"))
         {
-            int hours = Serial.readStringUntil(':').toInt();
-            int minutes = Serial.readStringUntil(':').toInt();
-            int seconds = Serial.readStringUntil('\n').toInt();
-            clock.fillByHMS(hours, minutes, seconds);
+            int a = value.substring(0, 2).toInt();
+            int b = value.substring(3, 5).toInt();
+            int c = value.substring(6, 8).toInt();
+
+            if(parameterName == ("CLOCK"))
+                clock.fillByHMS(a, b, c);
+            else
+                clock.fillByYMD(b, a, c);
             return;
         }
-        else if(parameter == ("DATE"))
+        else if(parameterName == ("DAY"))
         {
-            int month = Serial.readStringUntil(',').toInt();
-            int day = Serial.readStringUntil(',').toInt();
-            int year = Serial.readStringUntil('\n').toInt();
-            clock.fillByYMD(year, month, day);
-            return;
-        }
-        else if(parameter == ("DAY"))
-        {
-            String day = Serial.readString();
-            clock.fillDayOfWeek(getWeekDay(day));
+            clock.fillDayOfWeek(getWeekDay(value));
             return;
         }
 
-        long value = Serial.readString().toInt();
+        Serial.print("Parameter "); Serial.print(parameterName); Serial.print(" set to "); Serial.println(value.toInt());
+        setParameter(parameterName, value.toInt());
 
-        setParameter(parameter, value);
+        lastSet = millis();
     }
 }
 
@@ -42,34 +65,32 @@ void setParameter(String parameter, long value)
         logInterval = value;
     else if(parameter == ("FILE_MAX_SIZE"))
         maxFileSize = value;
-    else if(parameter == ("VERSION"))
-        Serial.println(VERSION);
     else if(parameter == ("TIMEOUT"))
         sensorTimeout = value;
     else if(parameter == ("LUMIN"))
-        isLuminSensorActive = value;
+        sensors.luminositySensor.isActive = value;
     else if(parameter == ("LUMIN_LOW"))
-        luminLow = value;
+        sensors.luminositySensor.low = value;
     else if(parameter == ("LUMIN_HIGH"))
-        luminHigh = value;
+        sensors.luminositySensor.high = value;
     else if(parameter == ("TEMP_AIR"))
-        isTempSensorActive = value;
+        sensors.temperatureSensor.isActive = value;
     else if(parameter == ("MIN_TEMP_AIR"))
-        tempMin = value;
+        sensors.temperatureSensor.min = value;
     else if(parameter == ("MAX_TEMP_AIR"))
-        tempMax = value;
+        sensors.temperatureSensor.max = value;
     else if(parameter == ("HYGR"))
-        isHygrSensorActive = value;
+        sensors.hygrometrySensor.isActive = value;
     else if(parameter == ("HYGR_MINT"))
-        hygrTempMin = value;
+        sensors.hygrometrySensor.minTemperature = value;
     else if(parameter == ("HYGR_MAXT"))
-        hygrTempMax = value;
+        sensors.hygrometrySensor.maxTemperature = value;
     else if(parameter == ("PRESSURE"))
-        isPressureSensorActive = value;
+        sensors.pressureSensor.isActive = value;
     else if(parameter == ("PRESSURE_MIN"))
-        pressureMin = value;
+        sensors.pressureSensor.min = value;
     else if(parameter == ("PRESSURE_MAX"))
-        pressureMax = value;
+        sensors.pressureSensor.max = value;
 }
 
 int getWeekDay(String str)

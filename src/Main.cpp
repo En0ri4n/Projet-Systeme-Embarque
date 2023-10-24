@@ -13,25 +13,7 @@ unsigned short logInterval = DEFAULT_LOG_INTERVAL;
 unsigned short sensorTimeout = DEFAULT_SENSOR_TIMEOUT;
 unsigned int maxFileSize = DEFAULT_MAX_FILE_SIZE;
 
-/**
- * Sensors
-*/
-// Luminosity
-bool isLuminSensorActive = 1;
-unsigned short luminLow = DEFAULT_LUMIN_LOW;
-unsigned short luminHigh = DEFAULT_LUMIN_HIGH;
-// Temperature
-bool isTempSensorActive = 1;
-byte tempMin = DEFAULT_MIN_TEMP_AIR;
-byte tempMax = DEFAULT_MAX_TEMP_AIR;
-// Hygrometre
-bool isHygrSensorActive = 1;
-byte hygrTempMin = DEFAULT_HYGR_TEMP_MIN;
-byte hygrTempMax = DEFAULT_HYGR_TEMP_MAX;
-// Pressure
-bool isPressureSensorActive = 1;
-unsigned short pressureMin = DEFAULT_MIN_PRESSURE;
-unsigned short pressureMax = DEFAULT_MAX_PRESSURE;
+Sensors sensors;
 
 byte currentDay;
 unsigned int fileRev = 1;
@@ -47,6 +29,8 @@ void setup()
   while (!Serial);    // Wait for serial port to connect. Needed for native USB port only
 
   leds.init(); // Initialize LEDs (needed before anything else because it will shows errors)
+
+  initializeData();
 
   bmeSensor.begin(); // Initialize BME280 Sensor
 
@@ -88,7 +72,7 @@ void loop()
   String dataString = formatTime(clock.hour, clock.minute, clock.second, ':') + "; ";
   
   // Luminosity captor reading
-  if(isLuminSensorActive)
+  if(sensors.luminositySensor.isActive)
   {
     int sensor = analogRead(LUMINOSITY_SENSOR_PIN);
     dataString += String(sensor) + " ; ";
@@ -96,27 +80,27 @@ void loop()
 
   float temperature = 0.0;
 
-  if(isTempSensorActive)
+  if(sensors.temperatureSensor.isActive)
   {
     temperature = bmeSensor.getTemperatureCelcius();
 
-    if(temperature < tempMin || temperature > tempMax)
+    if(temperature < sensors.temperatureSensor.min || temperature > sensors.temperatureSensor.max)
       error(INCONSISTENT_SENSOR_DATA_ERROR);
     
     dataString += String(temperature) + " ; ";
   }
 
-  if(isHygrSensorActive && (temperature < hygrTempMin || temperature > hygrTempMax))
+  if(sensors.hygrometrySensor.isActive && (temperature < sensors.hygrometrySensor.minTemperature || temperature > sensors.hygrometrySensor.maxTemperature))
   {
     float humidity = bmeSensor.getRelativeHumidity();
     dataString += String(humidity) + " ; ";
   }
 
-  if(isPressureSensorActive)
+  if(sensors.pressureSensor.isActive)
   {
     float pressure = bmeSensor.getPressure();
 
-    if(pressure < pressureMin || pressure > pressureMax)
+    if(pressure < sensors.pressureSensor.min || pressure > sensors.pressureSensor.max)
       error(INCONSISTENT_SENSOR_DATA_ERROR);
 
     dataString += String(pressure) + " ; ";
@@ -130,7 +114,9 @@ void loop()
 
   if(mode == ECO_MODE)
     shouldReadGPSData = !shouldReadGPSData;
-    
+  else
+    shouldReadGPSData = true;
+  
   if(SoftSerial.available() && shouldReadGPSData) // if data is coming from software serial port ==> data is coming from SoftSerial GPS
   {
     do
@@ -151,19 +137,18 @@ void loop()
 
   File dataFile = SD.open(getFilename(0), FILE_WRITE);
 
-  Serial.println(getFilename(0));
-
   if(dataFile.size() >= maxFileSize)
   {
     dataFile.close();
+
     File inputFile = SD.open(getFilename(0), FILE_READ);
     File outputFile = SD.open(getFilename(fileRev), FILE_WRITE);
 
     while(inputFile.available())
       outputFile.write(inputFile.read());
     
-    inputFile.close();
     outputFile.close();
+    inputFile.close();
     
     fileRev++;
 
@@ -183,6 +168,16 @@ void loop()
   }
 }
 
+void initializeData()
+{
+  LuminositySensor luminSensor = { .isActive = true, .low = DEFAULT_LUMIN_LOW, .high = DEFAULT_LUMIN_HIGH };
+  TemperatureSensor tempSensor = { .isActive = true, .min = DEFAULT_MIN_TEMP_AIR, .max = DEFAULT_MAX_TEMP_AIR };
+  HygrometrySensor hygrSensor = { .isActive = true, .minTemperature = DEFAULT_HYGR_TEMP_MIN, .maxTemperature = DEFAULT_HYGR_TEMP_MAX };
+  PressureSensor pressureSensor = { .isActive = true, .min = DEFAULT_MIN_PRESSURE, .max = DEFAULT_MAX_PRESSURE };
+
+  sensors = { .luminositySensor = luminSensor, .temperatureSensor = tempSensor, .hygrometrySensor = hygrSensor, .pressureSensor = pressureSensor };
+}
+
 String getFilename(int rev)
 {
   clock.getTime();
@@ -192,7 +187,7 @@ String getFilename(int rev)
     currentDay = clock.dayOfMonth;
   }
 
-  return getFolder() + "/" + format(clock.year) + format(clock.month) + format(clock.dayOfMonth) + "_" + String(rev) + ".log";
+  return getFolder() + "/" + "lala.log";//format(clock.year) + format(clock.month) + format(clock.dayOfMonth) + "_" + String(rev) + ".log";
 }
 
 String getFolder()

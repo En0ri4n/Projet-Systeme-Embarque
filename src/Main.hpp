@@ -1,4 +1,4 @@
-#define VERSION "beta-0.0.1"
+#define VERSION "1.0.0"
 
 #define SERIAL_PORT_RATE 9600
 #define LUMINOSITY_SENSOR_PIN 2 // Luminosity sensor on A2 port on Grove Shield
@@ -30,13 +30,6 @@
 #define DEFAULT_MAX_PRESSURE 1080
 
 /**
- * Parameters variable
-*/
-extern unsigned short logInterval;
-extern unsigned int maxFileSize;
-extern unsigned short sensorTimeout;
-
-/**
  * Modes
 */
 #define CONFIG_MODE 0
@@ -50,6 +43,13 @@ extern unsigned short sensorTimeout;
 extern byte mode;
 
 /**
+ * Parameters variable
+*/
+extern unsigned short logInterval;
+extern unsigned int maxFileSize;
+extern unsigned short sensorTimeout;
+
+/**
  * External modules declaration
 */
 extern SoftwareSerial SoftSerial;
@@ -60,23 +60,38 @@ extern ForcedClimate bmeSensor;
 /**
  * Sensors
 */
-// Luminosity
-extern bool isLuminSensorActive;
-extern unsigned short luminLow;
-extern unsigned short luminHigh;
-// Temperature
-extern bool isTempSensorActive;
-extern byte tempMin;
-extern byte tempMax;
-// Hygrometre
-extern bool isHygrSensorActive;
-extern byte hygrTempMin;
-extern byte hygrTempMax;
-// Pressure
-extern bool isPressureSensorActive;
-extern unsigned short pressureMin;
-extern unsigned short pressureMax;
+typedef struct LuminositySensor {
+    bool isActive;
+    unsigned short low;
+    unsigned short high;
+} LuminositySensor;
 
+typedef struct TemperatureSensor {
+    bool isActive;
+    short min;
+    short max;
+} TemperatureSensor;
+
+typedef struct HygrometrySensor {
+    bool isActive;
+    byte minTemperature;
+    byte maxTemperature;
+} HygrometrySensor;
+
+typedef struct PressureSensor {
+    bool isActive;
+    unsigned short min;
+    unsigned short max;
+} PressureSensor;
+
+typedef struct Sensors {
+    LuminositySensor luminositySensor;
+    TemperatureSensor temperatureSensor;
+    HygrometrySensor hygrometrySensor;
+    PressureSensor pressureSensor;
+} Sensors;
+
+extern Sensors sensors;
 
 /*
  * Functions declaration
@@ -86,3 +101,4 @@ String formatTime(unsigned short a, unsigned short b, unsigned short c, char sep
 String getFilename(int rev);
 void changeMode(byte newMode);
 String getFolder();
+void initializeData();

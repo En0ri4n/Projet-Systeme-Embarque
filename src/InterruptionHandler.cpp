@@ -8,23 +8,20 @@ byte lastMode;
 
 void initializeInterruptions()
 {
+  greenFlag = redFlag = false;
   attachInterrupt(digitalPinToInterrupt(GREEN_BUTTON_PIN), greenInterrupt, CHANGE);
   attachInterrupt(digitalPinToInterrupt(RED_BUTTON_PIN), redInterrupt, CHANGE);
 }
 
 void greenInterrupt()
 {
-  if(millis() <= greenStart + DEBOUNCE_TIME && !greenFlag)
+  if(millis() - greenStart <=  DEBOUNCE_TIME)
     return;
 
   if(mode != STANDARD_MODE && mode != ECO_MODE)
     return;
 
-  if(!greenFlag)
-  {
-    greenStart = millis();
-  }
-  else
+  if(greenFlag)
   {
     if(millis() - greenStart >= PRESS_TIME)
     {
@@ -32,18 +29,21 @@ void greenInterrupt()
     }
   }
   
+  greenStart = millis();
   greenFlag = !greenFlag;
+  redFlag = false;
 }
 
 void redInterrupt()
 {
+  if(millis() - redStart <=  DEBOUNCE_TIME)
+    return;
+
   if(mode == CONFIG_MODE)
     return;
 
   if(!redFlag)
   {
-    redStart = millis();
-
     if(mode != MAINTENANCE_MODE)
       lastMode = mode;
   }
@@ -55,7 +55,9 @@ void redInterrupt()
     }
   }
   
+  redStart = millis();
   redFlag = !redFlag;
+  greenFlag = false;
 }
 
 float getColor(byte newMode)
