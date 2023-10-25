@@ -6,27 +6,31 @@ String value;
 
 void configLoop()
 {
-    // Vérifie si le temps écoulé depuis le dernier réglage est supérieur au temps d'inactivité avant la sortie
+    // Check if time since last setting is greater than idle time before exit
     if(millis() - lastSet > IDLE_TIME_BEFORE_EXIT * 60000UL)
     {
-        // Change le mode en mode standard et retourne (sort de la fonction)
+        // Change the mode to standard mode and return (exit the function)
         changeMode(STANDARD_MODE);
         return;
     }
-    // Vérifie s'il y a des données disponibles sur le port série
+    
+    // Check if there is data available on the serial port
     if(Serial.available() > 0)
     {
-        // Lit la ligne de texte jusqu'au caractère de saut de ligne '\n'
+        
+        // Read the line of text up to the newline character '\n'
         String str = Serial.readStringUntil('\n');
-        // Supprime le caractère de saut de ligne de la fin de la chaîne
+        
+        // Remove newline character from end of string
         str = str.substring(0, str.length() - 1);
-        // Recherche l'indice du signe égal dans la chaîne
+        // Find the index of the equal sign in the string
         short equalIndex = str.indexOf('=');
 
-        // Si aucun signe égal n'est trouvé dans la chaîne
+        
+        // If no equal sign is found in the string  
         if(equalIndex < 0)
         {   
-            // Vérifie les commandes spéciales et effectue des actions en conséquence
+            // Checks special commands and takes actions accordingly
             if(str == (F("VERSION")))
             {
                 Serial.print(F("Current version : ")); Serial.println(VERSION);
@@ -39,19 +43,20 @@ void configLoop()
             return;
         }
 
-         // Extrayez le nom du paramètre et sa valeur de la chaîne
+        
+        // Extract the parameter name and its value from the string
         parameterName = str.substring(0, equalIndex);
         value = str.substring(equalIndex + 1, str.length());
 
         // We need to do special case for time, because all others parameters are integer
         if(parameterName == (F("CLOCK")) || parameterName == (F("DATE")))
         {
-            // Extrayez les composants de l'heure ou de la date (heures, minutes, secondes ou jour, mois, année)
+            // Extract time or date components (hours, minutes, seconds or day, month, year)
             int a = value.substring(0, 2).toInt();
             int b = value.substring(3, 5).toInt();
             int c = value.substring(6, 8).toInt();
 
-            // Remplit l'objet clock avec l'heure ou la date extraite
+            // Fill the clock object with the extracted time or date
             if(parameterName == (F("CLOCK")))
             {
                 clock.fillByHMS(a, b, c);
@@ -66,13 +71,13 @@ void configLoop()
         }
         else if(parameterName == (F("DAY")))
         {
-            // Remplit le jour de la semaine dans l'objet clock en fonction de la valeur fournie
+            // Fills the day of the week in the clock object based on the value provided
             clock.fillDayOfWeek(getWeekDay(value));
             Serial.print(F("Clock day set to ")); Serial.println(value);
             return;
         }
 
-        // Affiche un message indiquant que le paramètre a été modifié et met à jour la valeur du paramètre
+        // Display a message that the parameter has been changed and update the parameter value
         Serial.print(F("Parameter ")); Serial.print(parameterName); Serial.print(F(" set to ")); Serial.println(value.toInt());
         setParameter(parameterName, value.toInt());
 

@@ -1,4 +1,4 @@
-#define VERSION "1.0.0"
+#define VERSION "1.0.1"
 
 #define SERIAL_PORT_RATE 9600
 #define LUMINOSITY_SENSOR_PIN 2 // Luminosity sensor on A2 port on Grove Shield
@@ -14,11 +14,12 @@
 
 #define SEALEVELPRESSURE (1013.25)
 
-/*
+/**
  * Default Values for Paramaters
 */
-#define DEFAULT_LOG_INTERVAL 1     // (in minutes)
-#define DEFAULT_SENSOR_TIMEOUT 30          // (in seconds)
+
+#define DEFAULT_LOG_INTERVAL 1      // (in minutes)
+#define DEFAULT_SENSOR_TIMEOUT 30   // (in seconds)
 #define DEFAULT_MAX_FILE_SIZE 2048  // (in bytes)
 #define DEFAULT_LUMIN_LOW 255
 #define DEFAULT_LUMIN_HIGH 768
@@ -125,7 +126,7 @@ typedef struct Sensors {
 
 extern Sensors sensors;
 
-/*
+/**
  * Functions declaration
 */
 String format(unsigned short a);

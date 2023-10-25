@@ -26,8 +26,9 @@ void handleError(byte errorType)
             break;
         case SD_CARD_ACCESS_ERROR:
             showLeds(RED, WHITE, 2000);
+            break;
         case NO_ERROR:
-        default:
+        default:    //si pas d'erreur alors quitte
             return;
     }
 }
@@ -35,12 +36,12 @@ void handleError(byte errorType)
 void showLeds(float color, float color2, short time)
 {
     setLed(color);
-    delay(1000);
+    delay(1000);    //tjrs 1 seconde la premiere couleur
     setLed(color2);
-    delay(time);
+    delay(time);    //juste la 2e couleur qui varie
 }
 
 void setLed(float color)
 {
-    leds.setColorHSL(0, color, 1.0, color == WHITE ? 1.0 : 0.5);
+    leds.setColorHSL(0, color, 1.0, color == WHITE ? 1.0 : 0.5); //si blanc alors saturation 1 sinon 0.5
 }

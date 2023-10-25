@@ -1,5 +1,5 @@
 /**
- * Errors
+ * Definition of Errors
 */
 #define NO_ERROR 0
 #define RTC_ACCESS_ERROR 1
@@ -10,7 +10,7 @@
 #define SD_CARD_ACCESS_ERROR 6
 
 /**
- * Colors
+ * Definition of COlors
 */
 #define ORANGE (0.025)
 #define GREEN (0.3)
@@ -20,6 +20,9 @@
 #define PURPLE (0.83)
 #define WHITE (-1)
 
+/**
+ * Functions
+*/
 void error(byte errorType);
 void handleError(byte errorType);
 void showLeds(float color, float color2, short time);

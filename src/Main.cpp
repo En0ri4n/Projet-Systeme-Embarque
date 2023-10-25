@@ -117,11 +117,11 @@ void fetchSensorData(Sensor sensor)
           hasData = true;
         break;
       default:
-        break;
+        break; //permet de quitter le switch
     }
 
     if(hasData)
-      break;
+      break; //permet de quitter le while pour le capteur, recommence avec le suivant, recommence ligne 73
 
     delay(1000);
     sensors.sensorStart++;
@@ -186,8 +186,6 @@ void readGPSData()
   else
     sensors.gps.shouldReadGPSData = true;
   
-  Serial.println();
-  
   if(SoftSerial.available() && sensors.gps.shouldReadGPSData) // if data is coming from software serial port ==> data is coming from SoftSerial GPS
   {
     do
@@ -210,19 +208,20 @@ void saveToFile()
   // if the file is available, write to it:
   if(sdFileData.dataFile)
   {
-    sdFileData.dataFile.println(sensors.sensorData);
-    sdFileData.dataFile.flush();
-    sdFileData.dataFile.close();
+    sdFileData.dataFile.println(sensors.sensorData); //envoie les données
+    sdFileData.dataFile.flush(); //permet d'ecrire dans la carte SD
+    sdFileData.dataFile.close(); //ferme le fichier
   }
   else
   {
-    sdFileData.dataFile.close();
+    sdFileData.dataFile.close(); //ferme au cas ou pour pas de fuite de mémoire
     error(SD_CARD_ACCESS_ERROR);
   }
 
   if(sdFileData.dataFile.fileSize() >= sdFileData.maxFileSize)
   {
     SD.rename(getFilename(0), getFilename(sdFileData.fileRev));
+    sdFileData.fileRev++;
   }
 
   delay(200);
