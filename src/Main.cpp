@@ -80,7 +80,7 @@ void loop()
 
   if(mode == MAINTENANCE_MODE)
   {
-    Serial.print(sensors.sensorData + '\n');
+    Serial.println(sensors.sensorData);
     return;
   }
 
@@ -189,11 +189,13 @@ void readGPSData()
   if(SoftSerial.available() && sensors.gps.shouldReadGPSData) // if data is coming from software serial port ==> data is coming from SoftSerial GPS
   {
     do
+    {
       sensors.gps.gpsData = SoftSerial.readStringUntil('\n');
+
+      if(sensors.gps.gpsData == "")
+        error(GPS_ACCESS_ERROR);
+    }
     while(!sensors.gps.gpsData.startsWith(F("$GPGGA"), 0)); // We need to find the good part of available data
-  
-   if(!sensors.gps.gpsData.startsWith(F("$GPGGA")))
-      error(GPS_ACCESS_ERROR);
   }
 
   sensors.sensorData += sensors.gps.gpsData;
@@ -224,7 +226,7 @@ void saveToFile()
     sdFileData.fileRev++;
   }
 
-  delay(200);
+  delay(1000);
   setLed(getColor(mode));
 }
 
