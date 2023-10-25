@@ -1,12 +1,12 @@
-#define DEBOUNCE_TIME 100 // in ms
+#define DEBOUNCE_TIME 100UL // in ms
 
 /*
- * Interruptions variables
+ * Interruptions variables (MUST BE VOLATILE)
 */
-extern unsigned long greenStart;
-extern unsigned long redStart;
-extern bool greenFlag;
-extern bool redFlag;
+extern volatile unsigned long greenStart;
+extern volatile unsigned long redStart;
+extern volatile bool greenFlag;
+extern volatile bool redFlag;
 
 void initializeInterruptions();
 void greenInterrupt();

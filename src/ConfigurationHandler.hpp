@@ -1,4 +1,4 @@
-#define IDLE_TIME_BEFORE_EXIT 30 // in minutes
+#define IDLE_TIME_BEFORE_EXIT 30UL // in minutes
 
 void configLoop();
 int getWeekDay(String str);

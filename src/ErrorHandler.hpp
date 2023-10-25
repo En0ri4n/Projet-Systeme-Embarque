@@ -17,6 +17,7 @@
 #define YELLOW (0.15)
 #define BLUE (0.6)
 #define RED (0.0)
+#define PURPLE (0.83)
 #define WHITE (-1)
 
 void error(byte errorType);

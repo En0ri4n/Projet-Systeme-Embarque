@@ -10,7 +10,7 @@
 #define SD_CARD_PIN 4
 #define GREEN_BUTTON_PIN 2
 #define RED_BUTTON_PIN 3
-#define PRESS_TIME 5000
+#define PRESS_TIME 5000UL
 
 #define SEALEVELPRESSURE (1013.25)
 
@@ -30,6 +30,11 @@
 #define DEFAULT_MAX_PRESSURE 1080
 
 /**
+ * Sensor Count
+*/
+#define SENSOR_COUNT 4
+
+/**
  * Modes
 */
 #define CONFIG_MODE 0
@@ -46,8 +51,6 @@ extern byte mode;
  * Parameters variable
 */
 extern unsigned short logInterval;
-extern unsigned int maxFileSize;
-extern unsigned short sensorTimeout;
 
 /**
  * External modules declaration
@@ -57,38 +60,67 @@ extern DS1307 clock;
 extern ChainableLED leds;
 extern ForcedClimate bmeSensor;
 
+typedef struct SdFileData {
+    unsigned short fileRev;
+    unsigned int maxFileSize;
+    File32 dataFile;
+} SdFileData;
+
+extern SdFileData sdFileData;
+
 /**
  * Sensors
 */
+enum Sensor
+{
+    LUMINOSITY = 0,
+    TEMPERATURE = 1,
+    HYGROMETRY = 2,
+    PRESSURE = 3
+};
+
 typedef struct LuminositySensor {
     bool isActive;
+    unsigned short value;
     unsigned short low;
     unsigned short high;
 } LuminositySensor;
 
 typedef struct TemperatureSensor {
     bool isActive;
+    short value;
     short min;
     short max;
 } TemperatureSensor;
 
 typedef struct HygrometrySensor {
     bool isActive;
-    byte minTemperature;
-    byte maxTemperature;
+    short value;
+    short minTemperature;
+    short maxTemperature;
 } HygrometrySensor;
 
 typedef struct PressureSensor {
     bool isActive;
+    unsigned short value;
     unsigned short min;
     unsigned short max;
 } PressureSensor;
 
+typedef struct GPSSensor {
+    String gpsData;
+    bool shouldReadGPSData;
+} GPSSensor;
+
 typedef struct Sensors {
+    String sensorData;
     LuminositySensor luminositySensor;
     TemperatureSensor temperatureSensor;
     HygrometrySensor hygrometrySensor;
     PressureSensor pressureSensor;
+    GPSSensor gps;
+    unsigned short sensorTimeout;
+    unsigned short sensorStart;
 } Sensors;
 
 extern Sensors sensors;
@@ -102,3 +134,10 @@ String getFilename(int rev);
 void changeMode(byte newMode);
 String getFolder();
 void initializeData();
+bool measureLuminosity();
+bool measureTemperature();
+bool measureHygrometry();
+bool measurePressure();
+void readGPSData();
+void fetchSensorData(Sensor sensor);
+void saveToFile();

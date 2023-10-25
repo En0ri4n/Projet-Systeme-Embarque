@@ -1,10 +1,10 @@
 #include "Headers.hpp"
 
-unsigned long greenStart;
-unsigned long redStart;
-bool greenFlag;
-bool redFlag;
-byte lastMode;
+volatile unsigned long greenStart;
+volatile unsigned long redStart;
+volatile bool greenFlag;
+volatile bool redFlag;
+volatile byte lastMode;
 
 void initializeInterruptions()
 {
