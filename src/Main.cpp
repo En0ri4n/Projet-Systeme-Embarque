@@ -38,7 +38,7 @@ void setup()
   SoftSerial.begin(SERIAL_PORT_RATE); // Open SoftwareSerial for GPS
 
   //Initialize Clock
-  clock.fillByYMD(2023, 11, currentDay = 18);   // 15 Nov 23
+  clock.fillByYMD(2023, 11, currentDay = 19);   // 15 Nov 23
   clock.fillByHMS(16, 30, 0);                 // 16:30:00"
   clock.fillDayOfWeek(SAT);                   // Sunday
   clock.setTime();                            // Write time to the RTC chip
@@ -55,6 +55,9 @@ void setup()
 
 void loop()
 {
+  if(millis() - programStart < 5000UL)
+    return;
+  
   if(mode == CONFIG_MODE)
   {
     configLoop();
@@ -68,7 +71,9 @@ void loop()
 
   clock.getTime(); // Read time from RTC Clock
 
-  sensors.sensorData = formatTime(clock.hour, clock.minute, clock.second, ':') + ";";
+  openFile();
+
+  print(formatTime(clock.hour, clock.minute, clock.second, ':') + ";", false);
   
   for(int sensorIndex = 0; sensorIndex < SENSOR_COUNT; sensorIndex++)
   {
@@ -77,12 +82,6 @@ void loop()
 
   // GPS Reading
   readGPSData();
-
-  if(mode == MAINTENANCE_MODE)
-  {
-    Serial.println(sensors.sensorData);
-    return;
-  }
 
   saveToFile();
 }
@@ -133,7 +132,7 @@ bool measureLuminosity()
   if(sensors.luminositySensor.isActive)
   {
     sensors.luminositySensor.value = analogRead(LUMINOSITY_SENSOR_PIN);
-    sensors.sensorData += String(sensors.luminositySensor.value) + ";";
+    print(String(sensors.luminositySensor.value) + ";", false);
   }
 
   return true;
@@ -148,7 +147,7 @@ bool measureTemperature()
     if(sensors.temperatureSensor.value < sensors.temperatureSensor.min || sensors.temperatureSensor.value > sensors.temperatureSensor.max)
       error(INCONSISTENT_SENSOR_DATA_ERROR);
     
-    sensors.sensorData += String(sensors.temperatureSensor.value) + ";";
+    print(String(sensors.temperatureSensor.value) + ";", false);
   }
 
   return true;
@@ -156,10 +155,10 @@ bool measureTemperature()
 
 bool measureHygrometry()
 {
-  if(sensors.hygrometrySensor.isActive && (sensors.temperatureSensor.value < sensors.hygrometrySensor.minTemperature || sensors.temperatureSensor.value > sensors.hygrometrySensor.maxTemperature))
+  if(sensors.hygrometrySensor.isActive && (sensors.temperatureSensor.value > sensors.hygrometrySensor.minTemperature && sensors.temperatureSensor.value < sensors.hygrometrySensor.maxTemperature))
   {
     sensors.hygrometrySensor.value = bmeSensor.getRelativeHumidity();
-    sensors.sensorData += String(sensors.hygrometrySensor.value) + ";";
+    print(String(sensors.hygrometrySensor.value) + ";", false);
   }
 
   return true;
@@ -174,7 +173,7 @@ bool measurePressure()
     if(sensors.pressureSensor.value < sensors.pressureSensor.min || sensors.pressureSensor.value > sensors.pressureSensor.max)
       error(INCONSISTENT_SENSOR_DATA_ERROR);
 
-    sensors.sensorData += String(sensors.pressureSensor.value) + ";";
+    print(String(sensors.pressureSensor.value) + ";", false);
   }
   return true;
 }
@@ -198,19 +197,27 @@ void readGPSData()
     while(!sensors.gps.gpsData.startsWith(F("$GPGGA"), 0)); // We need to find the good part of available data
   }
 
-  sensors.sensorData += sensors.gps.gpsData;
+  print(sensors.gps.gpsData, true);
+}
+
+void openFile()
+{
+  if(mode == MAINTENANCE_MODE)
+    return;
+  
+  setLed(PURPLE);
+  
+  sdFileData.dataFile = SD.open(getFilename(0), FILE_WRITE);
 }
 
 void saveToFile()
 {
-  setLed(PURPLE);
-
-  sdFileData.dataFile = SD.open(getFilename(0), FILE_WRITE);
+  if(mode == MAINTENANCE_MODE)
+    return;
 
   // if the file is available, write to it:
   if(sdFileData.dataFile)
   {
-    sdFileData.dataFile.println(sensors.sensorData); //envoie les données
     sdFileData.dataFile.flush(); //permet d'ecrire dans la carte SD
     sdFileData.dataFile.close(); //ferme le fichier
   }
@@ -226,7 +233,6 @@ void saveToFile()
     sdFileData.fileRev++;
   }
 
-  delay(1000);
   setLed(getColor(mode));
 }
 
@@ -238,7 +244,7 @@ void initializeData()
   PressureSensor pressureSensor = { .isActive = true, .value = 0, .min = DEFAULT_MIN_PRESSURE, .max = DEFAULT_MAX_PRESSURE };
   GPSSensor gpsSensor = { .gpsData = "", .shouldReadGPSData = true };
 
-  sensors = { .sensorData = "", .luminositySensor = luminSensor, .temperatureSensor = tempSensor, .hygrometrySensor = hygrSensor, .pressureSensor = pressureSensor, .gps = gpsSensor, .sensorTimeout = DEFAULT_SENSOR_TIMEOUT, .sensorStart = 0 };
+  sensors = { .luminositySensor = luminSensor, .temperatureSensor = tempSensor, .hygrometrySensor = hygrSensor, .pressureSensor = pressureSensor, .gps = gpsSensor, .sensorTimeout = DEFAULT_SENSOR_TIMEOUT, .sensorStart = 0 };
 
   sdFileData = { .fileRev = 1, .maxFileSize = DEFAULT_MAX_FILE_SIZE };
 }
@@ -247,7 +253,7 @@ String getFilename(int rev)
 {
   if(currentDay != clock.dayOfMonth) // Checks if day has changed, to reset file revision
   {
-    sdFileData.fileRev = 0;
+    sdFileData.fileRev = rev = 0;
     currentDay = clock.dayOfMonth;
   }
 
@@ -278,4 +284,12 @@ String format(unsigned short a)
 String formatTime(unsigned short a, unsigned short b, unsigned short c, char separator)
 {
   return '[' + format(a) + separator + format(b) + separator + format(c) + ']';
+}
+
+void print(String toPrint, bool newLine)
+{
+  if(mode == MAINTENANCE_MODE)
+    newLine ? Serial.println(toPrint) : Serial.print(toPrint);
+  else
+    newLine ? sdFileData.dataFile.println(toPrint) : sdFileData.dataFile.print(toPrint);
 }

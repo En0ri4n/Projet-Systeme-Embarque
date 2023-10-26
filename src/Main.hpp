@@ -114,7 +114,6 @@ typedef struct GPSSensor {
 } GPSSensor;
 
 typedef struct Sensors {
-    String sensorData;
     LuminositySensor luminositySensor;
     TemperatureSensor temperatureSensor;
     HygrometrySensor hygrometrySensor;
@@ -141,4 +140,6 @@ bool measureHygrometry();
 bool measurePressure();
 void readGPSData();
 void fetchSensorData(Sensor sensor);
+void openFile();
 void saveToFile();
+void print(String toPrint, bool newLine);
