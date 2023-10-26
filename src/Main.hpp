@@ -128,12 +128,13 @@ extern Sensors sensors;
 /**
  * Functions declaration
 */
+bool isModulePresent(int adress);
 String format(unsigned short a);
 String formatTime(unsigned short a, unsigned short b, unsigned short c, char separator);
 String getFilename(int rev);
 void changeMode(byte newMode);
 String getFolder();
-void initializeData();
+void initializeDefaultData();
 bool measureLuminosity();
 bool measureTemperature();
 bool measureHygrometry();

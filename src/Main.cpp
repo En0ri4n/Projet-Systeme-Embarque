@@ -28,14 +28,22 @@ void setup()
 
   leds.init(); // Initialize LEDs (needed before anything else because it will shows errors)
 
-  initializeData();
+  Wire.begin(); // Initialize I2C communications
+
+  initializeDefaultData(); // Initialize default data for sensors
+
+  if(!isModulePresent(BME280_SENSOR_PIN)) // Check if BME280 is connected
+    error(SENSOR_ACCESS_ERROR);
 
   bmeSensor.begin(); // Initialize BME280 Sensor
 
-  if(!SD.begin(SD_CARD_PIN)) // Initialize SD Card
+  if(!SD.begin(SD_CARD_PIN)) // Initialize SD Card and check if it's connected
       error(SD_CARD_ACCESS_ERROR);
   
   SoftSerial.begin(SERIAL_PORT_RATE); // Open SoftwareSerial for GPS
+
+  if(!isModulePresent(DS1307_I2C_ADDRESS)) // Check if clock is connected
+    error(RTC_ACCESS_ERROR);
 
   // Initialize Clock
   clock.fillByYMD(2023, 11, currentDay = 22);   // 15 Nov 23
@@ -49,6 +57,12 @@ void setup()
   initializeInterruptions();
 
   changeMode(digitalRead(RED_BUTTON_PIN) == LOW ? CONFIG_MODE : STANDARD_MODE);
+}
+
+bool isModulePresent(int adress)
+{
+  Wire.beginTransmission(adress);
+  return Wire.endTransmission() == 0;
 }
 
 void loop()
@@ -229,7 +243,7 @@ void saveToFile()
   setLed(getColor(mode));
 }
 
-void initializeData()
+void initializeDefaultData()
 {
   LuminositySensor luminSensor = { .isActive = true, .value = 0, .low = DEFAULT_LUMIN_LOW, .high = DEFAULT_LUMIN_HIGH };
   TemperatureSensor tempSensor = { .isActive = true, .value = 0, .min = DEFAULT_MIN_TEMP_AIR, .max = DEFAULT_MAX_TEMP_AIR };
