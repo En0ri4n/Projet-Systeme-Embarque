@@ -114,11 +114,11 @@ void fetchSensorData(Sensor sensor)
           hasData = true;
         break;
       default:
-        break; //permet de quitter le switch
+        break; //allows you to exit the switch
     }
 
     if(hasData)
-      break; //permet de quitter le while pour le capteur, recommence avec le suivant, recommence ligne 73
+      break; //leaves the while for the sensor, starts again with the next one, starts again line 73
   }
 }
 
@@ -218,12 +218,12 @@ void saveToFile()
   // if the file is available, write to it:
   if(sdFileData.dataFile)
   {
-    sdFileData.dataFile.flush(); //permet d'ecrire dans la carte SD
-    sdFileData.dataFile.close(); //ferme le fichier
+    sdFileData.dataFile.flush(); //allows you to write to the SD card
+    sdFileData.dataFile.close(); //close the file
   }
   else
   {
-    sdFileData.dataFile.close(); //ferme au cas ou pour pas de fuite de mémoire
+    sdFileData.dataFile.close(); //close just in case for no memory leak
     error(SD_CARD_ACCESS_ERROR);
   }
 
