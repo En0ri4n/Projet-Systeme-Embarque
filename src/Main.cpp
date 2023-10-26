@@ -38,7 +38,7 @@ void setup()
   SoftSerial.begin(SERIAL_PORT_RATE); // Open SoftwareSerial for GPS
 
   //Initialize Clock
-  clock.fillByYMD(2023, 11, currentDay = 19);   // 15 Nov 23
+  clock.fillByYMD(2023, 11, currentDay = 21);   // 15 Nov 23
   clock.fillByHMS(16, 30, 0);                 // 16:30:00"
   clock.fillDayOfWeek(SAT);                   // Sunday
   clock.setTime();                            // Write time to the RTC chip
@@ -49,13 +49,11 @@ void setup()
   initializeInterruptions();
 
   changeMode(digitalRead(RED_BUTTON_PIN) == LOW ? CONFIG_MODE : STANDARD_MODE);
-
-  while(millis() - programStart < 1000UL); // Ensure that a second has passed after the program start to avoid errors
 }
 
 void loop()
 {
-  if(millis() - programStart < 5000UL)
+  if(millis() - programStart < 5000UL) // Ensure that 5 seconds have passed after the program start to avoid errors
     return;
   
   if(mode == CONFIG_MODE)
@@ -88,11 +86,11 @@ void loop()
 
 void fetchSensorData(Sensor sensor)
 {
-  sensors.sensorStart = 0;
+  sensors.sensorStart = millis();
 
   while(1)
   {
-    if(sensors.sensorStart >= sensors.sensorTimeout)
+    if(millis() - sensors.sensorStart >= sensors.sensorTimeout * 1000)
       error(SENSOR_ACCESS_ERROR);
     
     boolean hasData = false;
@@ -121,9 +119,6 @@ void fetchSensorData(Sensor sensor)
 
     if(hasData)
       break; //permet de quitter le while pour le capteur, recommence avec le suivant, recommence ligne 73
-
-    delay(1000);
-    sensors.sensorStart++;
   }
 }
 
@@ -187,6 +182,8 @@ void readGPSData()
   
   if(SoftSerial.available() && sensors.gps.shouldReadGPSData) // if data is coming from software serial port ==> data is coming from SoftSerial GPS
   {
+    sensors.sensorStart = millis();
+
     do
     {
       sensors.gps.gpsData = SoftSerial.readStringUntil('\n');
@@ -195,6 +192,9 @@ void readGPSData()
         error(GPS_ACCESS_ERROR);
     }
     while(!sensors.gps.gpsData.startsWith(F("$GPGGA"), 0)); // We need to find the good part of available data
+
+    if(millis() - sensors.sensorStart >= sensors.sensorTimeout * 1000)
+      error(GPS_ACCESS_ERROR);
   }
 
   print(sensors.gps.gpsData, true);
@@ -291,5 +291,5 @@ void print(String toPrint, bool newLine)
   if(mode == MAINTENANCE_MODE)
     newLine ? Serial.println(toPrint) : Serial.print(toPrint);
   else
-    newLine ? sdFileData.dataFile.println(toPrint) : sdFileData.dataFile.print(toPrint);
+    sdFileData.dataFile.print(toPrint);
 }

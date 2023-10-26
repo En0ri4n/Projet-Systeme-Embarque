@@ -120,7 +120,7 @@ typedef struct Sensors {
     PressureSensor pressureSensor;
     GPSSensor gps;
     unsigned short sensorTimeout;
-    unsigned short sensorStart;
+    unsigned long sensorStart;
 } Sensors;
 
 extern Sensors sensors;
