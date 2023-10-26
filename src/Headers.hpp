@@ -6,6 +6,7 @@
 #include <SPI.h>
 #include <SdFat.h>
 #include <Bounce2.h>
+#include <avr/wdt.h>
 
 #include "Main.hpp"
 #include "ConfigurationHandler.hpp"

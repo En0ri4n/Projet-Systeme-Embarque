@@ -25,7 +25,6 @@ void configLoop()
         str = str.substring(0, str.length() - 1);
         // Find the index of the equal sign in the string
         short equalIndex = str.indexOf('=');
-
         
         // If no equal sign is found in the string  
         if(equalIndex < 0)
@@ -36,7 +35,7 @@ void configLoop()
                 Serial.print(F("Current version : ")); Serial.println(VERSION);
             }
             else if(str == (F("RESET")))
-                initializeData();
+                wdt_enable(WDTO_15MS);
             else if(str == (F("EXIT")))
                 changeMode(STANDARD_MODE);
             
