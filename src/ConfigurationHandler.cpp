@@ -17,7 +17,6 @@ void configLoop()
     // Check if there is data available on the serial port
     if(Serial.available() > 0)
     {
-        
         // Read the line of text up to the newline character '\n'
         String str = Serial.readStringUntil('\n');
         

@@ -2,6 +2,8 @@
 
 void error(byte errorType)
 {
+    sdFileData.dataFile.close();
+    
     while(1)
         handleError(errorType);
 }
