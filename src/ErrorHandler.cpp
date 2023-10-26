@@ -28,7 +28,7 @@ void handleError(byte errorType)
             showLeds(RED, WHITE, 2000);
             break;
         case NO_ERROR:
-        default:    //si pas d'erreur alors quitte
+        default:    //if no error then exit
             return;
     }
 }
@@ -36,9 +36,9 @@ void handleError(byte errorType)
 void showLeds(float color, float color2, short time)
 {
     setLed(color);
-    delay(1000);    //tjrs 1 seconde la premiere couleur
+    delay(1000);    //always 1 second the first color
     setLed(color2);
-    delay(time);    //juste la 2e couleur qui varie
+    delay(time);    //just the 2nd color that varies
 }
 
 void setLed(float color)
