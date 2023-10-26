@@ -1,8 +1,8 @@
 #include "Headers.hpp"
 
-SoftwareSerial SoftSerial(SOFT_SERIAL_RECEIVE_PIN, SOFT_SERIAL_TRANSMIT_PIN);  // Serial already used for serial communication GPS connected on D8 port on Grove Shield
-DS1307 clock;                     // Define a object of DS1307 class RTC Clock on I2C port on Grove Shield
-ChainableLED leds(LED_CLOCK_PIN, LED_DATA_PIN, 1);       // 1 LED defined to pin 6 and 7
+SoftwareSerial SoftSerial(SOFT_SERIAL_RECEIVE_PIN, SOFT_SERIAL_TRANSMIT_PIN); // Serial already used for serial communication GPS connected on D8 port on Grove Shield
+DS1307 clock;                                                                 // Define a object of DS1307 class RTC Clock on I2C port on Grove Shield
+ChainableLED leds(LED_CLOCK_PIN, LED_DATA_PIN, 1);                            // 1 LED defined to pin 6 and 7
 ForcedClimate bmeSensor = ForcedClimate();
 
 byte errorType = NO_ERROR;
@@ -34,14 +34,14 @@ void setup()
 
   if(!SD.begin(SD_CARD_PIN)) // Initialize SD Card
       error(SD_CARD_ACCESS_ERROR);
-
+  
   SoftSerial.begin(SERIAL_PORT_RATE); // Open SoftwareSerial for GPS
 
-  //Initialize Clock
-  clock.fillByYMD(2023, 11, currentDay = 21);   // 15 Nov 23
-  clock.fillByHMS(16, 30, 0);                 // 16:30:00"
-  clock.fillDayOfWeek(SAT);                   // Sunday
-  clock.setTime();                            // Write time to the RTC chip
+  // Initialize Clock
+  clock.fillByYMD(2023, 11, currentDay = 22);   // 15 Nov 23
+  clock.fillByHMS(16, 30, 0);                   // 16:30:00"
+  clock.fillDayOfWeek(SAT);                     // Sunday
+  clock.setTime();                              // Write time to the RTC chip
 
   pinMode(GREEN_BUTTON_PIN, INPUT);
   pinMode(RED_BUTTON_PIN, INPUT);
@@ -87,38 +87,31 @@ void loop()
 void fetchSensorData(Sensor sensor)
 {
   sensors.sensorStart = millis();
-
-  while(1)
-  {
-    if(millis() - sensors.sensorStart >= sensors.sensorTimeout * 1000)
-      error(SENSOR_ACCESS_ERROR);
     
-    boolean hasData = false;
+  boolean hasData = false;
+
+  while(!hasData) // If data has been successfully retrieve, leaves the while for the sensor, starts again with the next one, starts again line 73
+  {
+    if(millis() - sensors.sensorStart >= sensors.sensorTimeout * 1000UL)
+      error(SENSOR_ACCESS_ERROR);
     
     switch (sensor)
     {
       case LUMINOSITY:
-        if(measureLuminosity())
-          hasData = true;
+        hasData = measureLuminosity();
         break;
       case TEMPERATURE:
-        if(measureTemperature())
-          hasData = true;
+        hasData = measureTemperature();
         break;
       case HYGROMETRY:
-        if(measureHygrometry())
-          hasData = true;
+        hasData = measureHygrometry();
         break;
       case PRESSURE:
-        if(measurePressure())
-          hasData = true;
+        hasData = measurePressure();
         break;
       default:
         break; //allows you to exit the switch
     }
-
-    if(hasData)
-      break; //leaves the while for the sensor, starts again with the next one, starts again line 73
   }
 }
 
