@@ -274,6 +274,9 @@ void changeMode(byte newMode)
 {
   mode = newMode;
   setLed(getColor(mode));
+
+  if(mode == MAINTENANCE_MODE)
+    Serial.println(F("[HH:mm:ss];Luminosity;Temperature;Humidity;Pressure;GPS_DATA"));
 }
 
 String format(unsigned short a)
