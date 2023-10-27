@@ -13,8 +13,6 @@
 #define RED_BUTTON_PIN 3                // Red button pin                                               (D2)
 #define PRESS_TIME 5000UL
 
-#define SEALEVELPRESSURE (1013.25)
-
 /**
  * Modes
 */
