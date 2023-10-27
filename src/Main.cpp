@@ -32,11 +32,13 @@ void setup()
 
   initializeDefaultData(); // Initialize default data for sensors
 
-  pinMode(LUMINOSITY_SENSOR_PIN, OUTPUT);     // Set luminosity pin to OUTPUT
-  pinMode(LUMINOSITY_SENSOR_PIN_DEF, OUTPUT); // Set reference to luminosity pin to OUTPUT
-
-  if(analogRead(LUMINOSITY_SENSOR_PIN_DEF) <= 0) // Check if Luminosity sensor is connected
+  pinMode(LUMINOSITY_SENSOR_PIN_DEF, OUTPUT);     // Set reference luminosity pin to OUTPUT
+  
+  if(analogRead(LUMINOSITY_SENSOR_PIN_DEF) <= 0)  // Check if Luminosity sensor is connected
     error(SENSOR_ACCESS_ERROR);
+  
+  pinMode(LUMINOSITY_SENSOR_PIN, OUTPUT);         // Set luminosity pin to OUTPUT
+  pinMode(LUMINOSITY_SENSOR_PIN_DEF, INPUT);      // Reset reference to luminosity pin to INPUT
 
   if(!isModulePresent(BME280_SENSOR_PIN)) // Check if BME280 is connected
     error(SENSOR_ACCESS_ERROR);
