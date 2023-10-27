@@ -1,15 +1,16 @@
 #define VERSION "1.0.1"
 
 #define SERIAL_PORT_RATE 9600
-#define LUMINOSITY_SENSOR_PIN 2 // Luminosity sensor on A2 port on Grove Shield
-#define BME280_SENSOR_PIN 0x76 // BME280 sensor on I2C port on Grove Shield
-#define SOFT_SERIAL_RECEIVE_PIN 8
-#define SOFT_SERIAL_TRANSMIT_PIN 9
-#define LED_CLOCK_PIN 6
-#define LED_DATA_PIN 7
-#define SD_CARD_PIN 4
-#define GREEN_BUTTON_PIN 2
-#define RED_BUTTON_PIN 3
+#define LUMINOSITY_SENSOR_PIN 0         // Luminosity sensor on A0 (= 0) port on Grove Shield           (A0)
+#define LUMINOSITY_SENSOR_PIN_DEF 14U   // Reference to luminosity sensor on A0 port on Grove Shield    (A0)
+#define BME280_SENSOR_PIN 0x76          // BME280 sensor on I2C port on Grove Shield                    (I2C)
+#define SOFT_SERIAL_RECEIVE_PIN 8       // Reception pin for SoftwareSerial                             (D8)
+#define SOFT_SERIAL_TRANSMIT_PIN 9      // Transmission pin for SoftwareSerial                          (D8)
+#define LED_CLOCK_PIN 6                 // Clock pin of Chainable LED                                   (D6)
+#define LED_DATA_PIN 7                  // Data pin of Chainable LED                                    (D6)
+#define SD_CARD_PIN 4                   // Dedicated pin for SD card reader                             (4)
+#define GREEN_BUTTON_PIN 2              // Green button pin                                             (D2)
+#define RED_BUTTON_PIN 3                // Red button pin                                               (D2)
 #define PRESS_TIME 5000UL
 
 #define SEALEVELPRESSURE (1013.25)
