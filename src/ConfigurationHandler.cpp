@@ -39,7 +39,7 @@ void configLoop()
             {
                 for(int i = 0; i < SENSOR_DATA_COUNT; i++)
                     setParameterData((Configuration) i, DEFAULT_DATA[i]);
-                wdt_enable(WDTO_15MS);
+                Serial.println(F("All parameters set to default"));
             }
             else if(str == (F("EXIT")))
                 changeMode(STANDARD_MODE);
@@ -95,6 +95,7 @@ void configLoop()
         lastSet = millis();
     }
 }
+
 //This function allows you to update a specific value in the program based on the parameter provided
 void setParameter(String parameter, long value)
 {

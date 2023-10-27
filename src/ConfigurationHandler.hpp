@@ -1,7 +1,7 @@
 #define IDLE_TIME_BEFORE_EXIT 30UL // in minutes
 
 enum Configuration {
-    CONFIGURATION_UNKNOWN = -1,
+    CONFIGURATION_UNKNOWN = 99,
     LOG_INTERVAL = 0,
     MAX_FILE_SIZE = 1,
     TIMEOUT = 2,
