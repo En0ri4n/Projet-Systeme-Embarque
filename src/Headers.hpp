@@ -6,8 +6,9 @@
 #include <SdFat.h>
 #include <Bounce2.h>
 #include <avr/wdt.h>
+#include <EEPROM.h>
 
-#include "Main.hpp"
-#include "ConfigurationHandler.hpp"
-#include "InterruptionHandler.hpp"
 #include "ErrorHandler.hpp"
+#include "InterruptionHandler.hpp"
+#include "ConfigurationHandler.hpp"
+#include "Main.hpp"

@@ -35,28 +35,28 @@ void setup()
   pinMode(LUMINOSITY_SENSOR_PIN_DEF, OUTPUT);     // Set reference luminosity pin to OUTPUT
   
   if(analogRead(LUMINOSITY_SENSOR_PIN_DEF) <= 0)  // Check if Luminosity sensor is connected
-    error(SENSOR_ACCESS_ERROR);
+    error(SENSOR_ACCESS_ERROR, F("Failed to initialize Luminosity Sensor"));
   
   pinMode(LUMINOSITY_SENSOR_PIN, OUTPUT);         // Set luminosity pin to OUTPUT
   pinMode(LUMINOSITY_SENSOR_PIN_DEF, INPUT);      // Reset reference to luminosity pin to INPUT
 
   if(!isModulePresent(BME280_SENSOR_PIN)) // Check if BME280 is connected
-    error(SENSOR_ACCESS_ERROR);
+    error(SENSOR_ACCESS_ERROR, F("Failed to initialize BME280 Sensor"));
 
   bmeSensor.begin(); // Initialize BME280 Sensor
 
   if(!SD.begin(SD_CARD_PIN)) // Initialize SD Card and check if it's connected
-      error(SD_CARD_ACCESS_ERROR);
+      error(SD_CARD_ACCESS_ERROR, F("Failed to initialize SD Card"));
   
   SoftSerial.begin(SERIAL_PORT_RATE); // Open SoftwareSerial for GPS
 
   unsigned long checkGps = millis();
   while(!SoftSerial.available()) // Wait for SoftwareSerial to have available data to check if it's connected
     if(millis() - checkGps > 3000UL)
-      error(GPS_ACCESS_ERROR);
+      error(GPS_ACCESS_ERROR, F("Failed to initialize GPS"));
 
   if(!isModulePresent(DS1307_I2C_ADDRESS)) // Check if clock is connected
-    error(RTC_ACCESS_ERROR);
+    error(RTC_ACCESS_ERROR, F("Failed to initialize RTC"));
 
   // Initialize Clock
   clock.fillByYMD(2023, 11, currentDay = 22);   // 15 Nov 23
@@ -119,8 +119,8 @@ void fetchSensorData(Sensor sensor)
 
   while(!hasData) // If data has been successfully retrieve, leaves the while for the sensor, starts again with the next one, starts again line 73
   {
-    if(millis() - sensors.sensorStart >= sensors.sensorTimeout * 1000UL)
-      error(SENSOR_ACCESS_ERROR);
+    if(millis() - sensors.sensorStart >= dataParameters[TIMEOUT] * 1000UL)
+      error(SENSOR_ACCESS_ERROR, F("Failed to fetch data in time from sensor"));
     
     switch (sensor)
     {
@@ -144,7 +144,7 @@ void fetchSensorData(Sensor sensor)
 
 bool measureLuminosity()
 {
-  if(sensors.luminositySensor.isActive)
+  if(dataParameters[IS_LUMIN_ACTIVE])
   {
     sensors.luminositySensor.value = analogRead(LUMINOSITY_SENSOR_PIN);
     print(String(sensors.luminositySensor.value) + ";", false);
@@ -155,12 +155,12 @@ bool measureLuminosity()
 
 bool measureTemperature()
 {
-  if(sensors.temperatureSensor.isActive)
+  if(dataParameters[IS_TEMP_ACTIVE])
   {
     sensors.temperatureSensor.value = bmeSensor.getTemperatureCelcius();
 
-    if(sensors.temperatureSensor.value < sensors.temperatureSensor.min || sensors.temperatureSensor.value > sensors.temperatureSensor.max)
-      error(INCONSISTENT_SENSOR_DATA_ERROR);
+    if(sensors.temperatureSensor.value < dataParameters[MIN_TEMP_AIR] || sensors.temperatureSensor.value > dataParameters[MAX_TEMP_AIR])
+      error(INCONSISTENT_SENSOR_DATA_ERROR, F("Failed to fetch temperature"));
     
     print(String(sensors.temperatureSensor.value) + ";", false);
   }
@@ -170,7 +170,7 @@ bool measureTemperature()
 
 bool measureHygrometry()
 {
-  if(sensors.hygrometrySensor.isActive && (sensors.temperatureSensor.value > sensors.hygrometrySensor.minTemperature && sensors.temperatureSensor.value < sensors.hygrometrySensor.maxTemperature))
+  if(dataParameters[IS_HYGR_ACTIVE] && (sensors.temperatureSensor.value > dataParameters[HYGR_MINT] && sensors.temperatureSensor.value < dataParameters[HYGR_MAXT]))
   {
     sensors.hygrometrySensor.value = bmeSensor.getRelativeHumidity();
     print(String(sensors.hygrometrySensor.value) + ";", false);
@@ -181,12 +181,12 @@ bool measureHygrometry()
 
 bool measurePressure()
 {
-  if(sensors.pressureSensor.isActive)
+  if(dataParameters[IS_PRESSURE_ACTIVE])
   {
     sensors.pressureSensor.value = bmeSensor.getPressure();
 
-    if(sensors.pressureSensor.value < sensors.pressureSensor.min || sensors.pressureSensor.value > sensors.pressureSensor.max)
-      error(INCONSISTENT_SENSOR_DATA_ERROR);
+    if(sensors.pressureSensor.value < dataParameters[PRESSURE_MIN] || sensors.pressureSensor.value > dataParameters[PRESSURE_MAX])
+      error(INCONSISTENT_SENSOR_DATA_ERROR, F("Failed to fetch pressure"));
 
     print(String(sensors.pressureSensor.value) + ";", false);
   }
@@ -209,12 +209,12 @@ void readGPSData()
       sensors.gps.gpsData = SoftSerial.readStringUntil('\n');
 
       if(sensors.gps.gpsData == "")
-        error(GPS_ACCESS_ERROR);
+        error(GPS_ACCESS_ERROR, F("Failed to fetch data from GPS"));
     }
     while(!sensors.gps.gpsData.startsWith(F("$GPGGA"), 0)); // We need to find the good part of available data
 
-    if(millis() - sensors.sensorStart >= sensors.sensorTimeout * 1000)
-      error(GPS_ACCESS_ERROR);
+    if(millis() - sensors.sensorStart >= dataParameters[TIMEOUT] * 1000)
+      error(GPS_ACCESS_ERROR, F("Failed to fetch data from GPS in time"));
   }
 
   print(sensors.gps.gpsData, true);
@@ -244,10 +244,10 @@ void saveToFile()
   else
   {
     sdFileData.dataFile.close(); //close just in case for no memory leak
-    error(SD_CARD_ACCESS_ERROR);
+    error(SD_CARD_ACCESS_ERROR, F("Failed to save to SD Card"));
   }
 
-  if(sdFileData.dataFile.fileSize() >= sdFileData.maxFileSize)
+  if(sdFileData.dataFile.fileSize() >= dataParameters[MAX_FILE_SIZE])
   {
     SD.rename(getFilename(0), getFilename(sdFileData.fileRev));
     sdFileData.fileRev++;
@@ -258,15 +258,30 @@ void saveToFile()
 
 void initializeDefaultData()
 {
-  LuminositySensor luminSensor = { .isActive = true, .value = 0, .low = DEFAULT_LUMIN_LOW, .high = DEFAULT_LUMIN_HIGH };
-  TemperatureSensor tempSensor = { .isActive = true, .value = 0, .min = DEFAULT_MIN_TEMP_AIR, .max = DEFAULT_MAX_TEMP_AIR };
-  HygrometrySensor hygrSensor = { .isActive = true, .value = 0, .minTemperature = DEFAULT_HYGR_TEMP_MIN, .maxTemperature = DEFAULT_HYGR_TEMP_MAX };
-  PressureSensor pressureSensor = { .isActive = true, .value = 0, .min = DEFAULT_MIN_PRESSURE, .max = DEFAULT_MAX_PRESSURE };
+  bool hasData = false;
+
+  for(int i = 0; i < SENSOR_DATA_COUNT; i++)
+    if(DEFAULT_DATA[i] != getParameter((Configuration) i))
+    {
+      hasData = true;
+      break;
+    }
+  
+  for(int i = 0; i < SENSOR_DATA_COUNT; i++)
+    if(hasData)
+      dataParameters[i] = getParameter((Configuration) i);
+    else
+      dataParameters[i] = DEFAULT_DATA[i];
+
+  LuminositySensor luminSensor = { .value = 0 };
+  TemperatureSensor tempSensor = { .value = 0 };
+  HygrometrySensor hygrSensor = { .value = 0 };
+  PressureSensor pressureSensor = { .value = 0 };
   GPSSensor gpsSensor = { .gpsData = "", .shouldReadGPSData = true };
 
-  sensors = { .luminositySensor = luminSensor, .temperatureSensor = tempSensor, .hygrometrySensor = hygrSensor, .pressureSensor = pressureSensor, .gps = gpsSensor, .sensorTimeout = DEFAULT_SENSOR_TIMEOUT, .sensorStart = 0 };
+  sensors = { .luminositySensor = luminSensor, .temperatureSensor = tempSensor, .hygrometrySensor = hygrSensor, .pressureSensor = pressureSensor, .gps = gpsSensor, .sensorStart = 0 };
 
-  sdFileData = { .fileRev = 1, .maxFileSize = DEFAULT_MAX_FILE_SIZE };
+  sdFileData = { .fileRev = 1 };
 }
 
 String getFilename(int rev)

@@ -1,11 +1,14 @@
 #include "Headers.hpp"
 
-void error(byte errorType)
+void error(byte errorType, String error)
 {
     sdFileData.dataFile.close();
     
     while(1)
+    {
         handleError(errorType);
+        Serial.println(error);
+    }
 }
 
 void handleError(byte errorType)

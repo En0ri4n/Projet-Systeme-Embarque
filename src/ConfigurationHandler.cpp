@@ -1,5 +1,7 @@
 #include "Headers.hpp"
 
+short dataParameters[SENSOR_DATA_COUNT];
+
 unsigned long lastSet;
 String parameterName;
 String value;
@@ -34,7 +36,11 @@ void configLoop()
                 Serial.print(F("Current version : ")); Serial.println(VERSION);
             }
             else if(str == (F("RESET")))
+            {
+                for(int i = 0; i < SENSOR_DATA_COUNT; i++)
+                    setParameterData((Configuration) i, DEFAULT_DATA[i]);
                 wdt_enable(WDTO_15MS);
+            }
             else if(str == (F("EXIT")))
                 changeMode(STANDARD_MODE);
             
@@ -92,36 +98,55 @@ void configLoop()
 //This function allows you to update a specific value in the program based on the parameter provided
 void setParameter(String parameter, long value)
 {
+    Configuration config = CONFIGURATION_UNKNOWN;
+
     if(parameter == (F("LOG_INTERVAL")))
-        logInterval = value;
+        config = LOG_INTERVAL;
     else if(parameter == (F("FILE_MAX_SIZE")))
-        sdFileData.maxFileSize = value;
+        config = MAX_FILE_SIZE;
     else if(parameter == (F("TIMEOUT")))
-        sensors.sensorTimeout = value;
+        config = TIMEOUT;
     else if(parameter == (F("LUMIN")))
-        sensors.luminositySensor.isActive = value;
+        config = IS_LUMIN_ACTIVE;
     else if(parameter == (F("LUMIN_LOW")))
-        sensors.luminositySensor.low = value;
+        config = LUMIN_LOW;
     else if(parameter == (F("LUMIN_HIGH")))
-        sensors.luminositySensor.high = value;
+        config = LUMIN_HIGH;
     else if(parameter == (F("TEMP_AIR")))
-        sensors.temperatureSensor.isActive = value;
+        config = IS_TEMP_ACTIVE;
     else if(parameter == (F("MIN_TEMP_AIR")))
-        sensors.temperatureSensor.min = value;
+        config = MIN_TEMP_AIR;
     else if(parameter == (F("MAX_TEMP_AIR")))
-        sensors.temperatureSensor.max = value;
+        config = MAX_TEMP_AIR;
     else if(parameter == (F("HYGR")))
-        sensors.hygrometrySensor.isActive = value;
+        config = IS_HYGR_ACTIVE;
     else if(parameter == (F("HYGR_MINT")))
-        sensors.hygrometrySensor.minTemperature = value;
+        config = HYGR_MINT;
     else if(parameter == (F("HYGR_MAXT")))
-        sensors.hygrometrySensor.maxTemperature = value;
+        config = HYGR_MAXT;
     else if(parameter == (F("PRESSURE")))
-        sensors.pressureSensor.isActive = value;
+        config = IS_PRESSURE_ACTIVE;
     else if(parameter == (F("PRESSURE_MIN")))
-        sensors.pressureSensor.min = value;
+        config = PRESSURE_MIN;
     else if(parameter == (F("PRESSURE_MAX")))
-        sensors.pressureSensor.max = value;
+        config = PRESSURE_MAX;
+
+    setParameterData(config, value);
+}
+
+short getParameter(Configuration config)
+{
+    short value = 0;
+    EEPROM.get(config * sizeof(long), value);
+    return value;
+}
+
+void setParameterData(Configuration config, short value)
+{
+    if(config != CONFIGURATION_UNKNOWN)
+        EEPROM.put(config * sizeof(long), value);
+    
+    dataParameters[config] = value;
 }
 
 //function which allows you to see if the capitalized word corresponds to the days of the week

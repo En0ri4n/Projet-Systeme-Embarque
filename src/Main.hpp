@@ -1,4 +1,4 @@
-#define VERSION "1.3.13"
+#define VERSION "2.0.2"
 
 #define SERIAL_PORT_RATE 9600
 #define LUMINOSITY_SENSOR_PIN 0         // Luminosity sensor on A0 (= 0) port on Grove Shield           (A0)
@@ -32,7 +32,7 @@
 #define DEFAULT_MAX_PRESSURE 1080
 
 /**
- * Sensor Count
+ * Sensors
 */
 #define SENSOR_COUNT 4
 
@@ -43,6 +43,11 @@
 #define STANDARD_MODE 1
 #define ECO_MODE 2
 #define MAINTENANCE_MODE 3
+
+/**
+ * Sensor data
+*/
+#define SENSOR_DATA_COUNT 15
 
 /**
  * Current mode
@@ -64,11 +69,13 @@ extern ForcedClimate bmeSensor;
 
 typedef struct SdFileData {
     unsigned short fileRev;
-    unsigned int maxFileSize;
     File32 dataFile;
 } SdFileData;
 
 extern SdFileData sdFileData;
+
+const short DEFAULT_DATA[15] = { DEFAULT_LOG_INTERVAL, DEFAULT_MAX_FILE_SIZE, DEFAULT_SENSOR_TIMEOUT, 1, DEFAULT_LUMIN_LOW, DEFAULT_LUMIN_HIGH, 1, DEFAULT_MIN_TEMP_AIR, DEFAULT_MAX_TEMP_AIR, 1, DEFAULT_HYGR_TEMP_MIN, DEFAULT_HYGR_TEMP_MAX, 1, DEFAULT_MIN_PRESSURE, DEFAULT_MAX_PRESSURE };
+extern short dataParameters[SENSOR_DATA_COUNT];
 
 /**
  * Sensors
@@ -82,31 +89,19 @@ enum Sensor
 };
 
 typedef struct LuminositySensor {
-    bool isActive;
     unsigned short value;
-    unsigned short low;
-    unsigned short high;
 } LuminositySensor;
 
 typedef struct TemperatureSensor {
-    bool isActive;
     short value;
-    short min;
-    short max;
 } TemperatureSensor;
 
 typedef struct HygrometrySensor {
-    bool isActive;
     short value;
-    short minTemperature;
-    short maxTemperature;
 } HygrometrySensor;
 
 typedef struct PressureSensor {
-    bool isActive;
     unsigned short value;
-    unsigned short min;
-    unsigned short max;
 } PressureSensor;
 
 typedef struct GPSSensor {
@@ -120,7 +115,6 @@ typedef struct Sensors {
     HygrometrySensor hygrometrySensor;
     PressureSensor pressureSensor;
     GPSSensor gps;
-    unsigned short sensorTimeout;
     unsigned long sensorStart;
 } Sensors;
 

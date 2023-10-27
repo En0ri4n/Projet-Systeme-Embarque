@@ -23,7 +23,7 @@
 /**
  * Functions
 */
-void error(byte errorType);
+void error(byte errorType, String error);
 void handleError(byte errorType);
 void showLeds(float color, float color2, short time);
 void setLed(float color);
