@@ -28,9 +28,9 @@ void setup()
 
   leds.init(); // Initialize LEDs (needed before anything else because it will shows errors)
 
-  Wire.begin(); // Initialize I2C communications
+  Wire.begin(); // Initialize I2C and SPI communications
 
-  initializeDefaultData(); // Initialize default data for sensors
+  initializeData(); // Initialize default data for sensors
 
   pinMode(LUMINOSITY_SENSOR_PIN_DEF, OUTPUT);     // Set reference luminosity pin to OUTPUT
   
@@ -256,7 +256,7 @@ void saveToFile()
   setLed(getColor(mode));
 }
 
-void initializeDefaultData()
+void initializeData()
 {
   bool hasData = false;
 

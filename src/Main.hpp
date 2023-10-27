@@ -129,7 +129,7 @@ String formatTime(unsigned short a, unsigned short b, unsigned short c, char sep
 String getFilename(int rev);
 void changeMode(byte newMode);
 String getFolder();
-void initializeDefaultData();
+void initializeData();
 bool measureLuminosity();
 bool measureTemperature();
 bool measureHygrometry();
