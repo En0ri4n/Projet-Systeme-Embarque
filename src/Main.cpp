@@ -32,6 +32,12 @@ void setup()
 
   initializeDefaultData(); // Initialize default data for sensors
 
+  pinMode(LUMINOSITY_SENSOR_PIN, OUTPUT);     // Set luminosity pin to OUTPUT
+  pinMode(LUMINOSITY_SENSOR_PIN_DEF, OUTPUT); // Set reference to luminosity pin to OUTPUT
+
+  if(analogRead(LUMINOSITY_SENSOR_PIN_DEF) <= 0) // Check if Luminosity sensor is connected
+    error(SENSOR_ACCESS_ERROR);
+
   if(!isModulePresent(BME280_SENSOR_PIN)) // Check if BME280 is connected
     error(SENSOR_ACCESS_ERROR);
 
@@ -41,6 +47,11 @@ void setup()
       error(SD_CARD_ACCESS_ERROR);
   
   SoftSerial.begin(SERIAL_PORT_RATE); // Open SoftwareSerial for GPS
+
+  unsigned long checkGps = millis();
+  while(!SoftSerial.available()) // Wait for SoftwareSerial to have available data to check if it's connected
+    if(millis() - checkGps > 3000UL)
+      error(GPS_ACCESS_ERROR);
 
   if(!isModulePresent(DS1307_I2C_ADDRESS)) // Check if clock is connected
     error(RTC_ACCESS_ERROR);
