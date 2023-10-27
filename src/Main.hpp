@@ -1,4 +1,4 @@
-#define VERSION "1.0.1"
+#define VERSION "1.3.12"
 
 #define SERIAL_PORT_RATE 9600
 #define LUMINOSITY_SENSOR_PIN 0         // Luminosity sensor on A0 (= 0) port on Grove Shield           (A0)
