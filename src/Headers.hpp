@@ -4,7 +4,6 @@
 #include <Wire.h>
 #include "DS1307.h"
 #include <SdFat.h>
-#include <Bounce2.h>
 #include <avr/wdt.h>
 #include <EEPROM.h>
 
