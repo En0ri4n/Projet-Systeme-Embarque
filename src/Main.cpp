@@ -21,40 +21,34 @@ SdFileData sdFileData;
 
 void setup()
 {
-  Serial.begin(SERIAL_PORT_RATE); // Open serial port
-  while (!Serial);    // Wait for serial port to connect. Needed for native USB port only
+  Serial.begin(SERIAL_PORT_RATE);           // Open serial port
+  while (!Serial);                          // Wait for serial port to connect.
 
-  leds.init(); // Initialize LEDs (needed before anything else because it will shows errors)
+  leds.init();                              // Initialize LEDs (needed before anything else because it will shows errors)
 
-  Wire.begin(); // Initialize I2C and SPI communications
+  Wire.begin();                             // Initialize I2C and SPI communications
+  
+  if(isModulePresent(LUMINOSITY_MODULE))    // Check if Luminosity sensor is connected
+    error(SENSOR_ACCESS_ERROR, F("Failed to initialize Luminosity Sensor"));
+
+  if(!isModulePresent(BME280_SENSOR_PIN))   // Check if BME280 is connected
+    error(SENSOR_ACCESS_ERROR, F("Failed to initialize BME280 Sensor"));
+
+  if(!isModulePresent(SD_CARD_MODULE))      // Initialize SD Card and check if it's connected
+      error(SD_CARD_ACCESS_ERROR, F("Failed to initialize SD Card"));
+
+  if(!isModulePresent(GPS_MODULE))          // Check if GPS is connected
+    error(GPS_ACCESS_ERROR, F("Failed to initialize GPS"));
+
+  if(!isModulePresent(DS1307_I2C_ADDRESS))  // Check if RTC is connected
+    error(RTC_ACCESS_ERROR, F("Failed to initialize RTC"));
+  
 
   initializeData(); // Initialize default data for sensors
 
-  pinMode(LUMINOSITY_SENSOR_PIN_DEF, OUTPUT);     // Set reference luminosity pin to OUTPUT
-  
-  if(analogRead(LUMINOSITY_SENSOR_PIN_DEF) <= 0)  // Check if Luminosity sensor is connected
-    error(SENSOR_ACCESS_ERROR, F("Failed to initialize Luminosity Sensor"));
-  
-  pinMode(LUMINOSITY_SENSOR_PIN, OUTPUT);         // Set luminosity pin to OUTPUT
-  pinMode(LUMINOSITY_SENSOR_PIN_DEF, INPUT);      // Reset reference to luminosity pin to INPUT
-
-  if(!isModulePresent(BME280_SENSOR_PIN)) // Check if BME280 is connected
-    error(SENSOR_ACCESS_ERROR, F("Failed to initialize BME280 Sensor"));
-
-  bmeSensor.begin(); // Initialize BME280 Sensor
-
-  if(!SD.begin(SD_CARD_PIN)) // Initialize SD Card and check if it's connected
-      error(SD_CARD_ACCESS_ERROR, F("Failed to initialize SD Card"));
-  
-  SoftSerial.begin(SERIAL_PORT_RATE); // Open SoftwareSerial for GPS
-
-  unsigned long checkGps = millis();
-  while(!SoftSerial.available()) // Wait for SoftwareSerial to have available data to check if it's connected
-    if(millis() - checkGps > 3000UL)
-      error(GPS_ACCESS_ERROR, F("Failed to initialize GPS"));
-
-  if(!isModulePresent(DS1307_I2C_ADDRESS)) // Check if clock is connected
-    error(RTC_ACCESS_ERROR, F("Failed to initialize RTC"));
+  pinMode(LUMINOSITY_SENSOR_PIN, OUTPUT);   // Set luminosity pin to OUTPUT
+  bmeSensor.begin();                        // Initialize BME280 Sensor
+  SoftSerial.begin(SERIAL_PORT_RATE);       // Open SoftwareSerial for GPS
 
   // Initialize Clock
   clock.fillByYMD(2023, 11, currentDay = 22);   // 15 Nov 23
@@ -213,4 +207,32 @@ void print(String toPrint, bool newLine)
     newLine ? Serial.println(toPrint) : Serial.print(toPrint);
   else
     sdFileData.dataFile.print(toPrint);
+}
+
+bool isModulePresent(int module)
+{
+  switch(module)
+  {
+    case LUMINOSITY_MODULE:
+      pinMode(LUMINOSITY_SENSOR_PIN_DEF, OUTPUT);
+      bool isConnected = analogRead(LUMINOSITY_SENSOR_PIN_DEF) <= 0; // Check if Luminosity sensor is connected
+      pinMode(LUMINOSITY_SENSOR_PIN_DEF, INPUT);      // Reset reference to luminosity pin to INPUT
+      return isConnected;
+    case BME280_MODULE:
+      Wire.begin(BME280_SENSOR_PIN);
+      return Wire.endTransmission() == 0;
+    case RTC_MODULE:
+      Wire.begin(DS1307_I2C_ADDRESS);
+      return Wire.endTransmission() == 0;
+    case GPS_MODULE:
+    unsigned long checkGps = millis();
+      while(!SoftSerial.available()) // Wait for SoftwareSerial to have available data to check if it's connected
+        if(millis() - checkGps > GPS_TIMEOUT)
+          return false;
+      return true;
+    case SD_CARD_MODULE:
+      return SD.begin(SD_CARD_PIN);
+    default:
+      return true;
+  }
 }
