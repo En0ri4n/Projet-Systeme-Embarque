@@ -60,10 +60,6 @@ void configLoop()
             int b = value.substring(3, 5).toInt();
             int c = value.substring(6, 8).toInt();
 
-            Serial.println(a);
-            Serial.println(b);
-            Serial.println(c);
-
             // Fill the clock object with the extracted time or date
             if(parameterName == (F("CLOCK")))
             {

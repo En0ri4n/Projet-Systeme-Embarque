@@ -189,11 +189,23 @@ String getFolder()
 
 void changeMode(byte newMode)
 {
+  if(sdFileData.dataFile)
+    sdFileData.dataFile.close(); // Ensure to close the file between switching mode, avoiding SD errors
+  
   mode = newMode;
   setLed(getColor(mode));
 
   if(mode == MAINTENANCE_MODE)
-    Serial.println(F("[HH:mm:ss];Luminosity;Temperature;Humidity;Pressure;GPS_DATA"));
+  {
+    Serial.print(F("[HH:mm:ss];"));
+
+    if(dataParameters[IS_LUMIN_ACTIVE]) Serial.print(F("Luminosity;"));
+    if(dataParameters[IS_TEMP_ACTIVE]) Serial.print(F("Temperature;"));
+    if(dataParameters[IS_HYGR_ACTIVE]) Serial.print(F("Humidity;"));
+    if(dataParameters[IS_PRESSURE_ACTIVE]) Serial.print(F("Pressure;"));
+    
+    Serial.println(F("GPS"));
+  }
 }
 
 String format(unsigned short a)
