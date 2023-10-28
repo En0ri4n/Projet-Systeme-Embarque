@@ -11,7 +11,17 @@
 #define SD_CARD_PIN 4                   // Dedicated pin for SD card reader                             (4)
 #define GREEN_BUTTON_PIN 2              // Green button pin                                             (D2)
 #define RED_BUTTON_PIN 3                // Red button pin                                               (D2)
+
 #define PRESS_TIME 5000UL
+
+/**
+ * Modules
+*/
+#define LUMINOSITY_MODULE 0
+#define BME280_MODULE 1
+#define RTC_MODULE 2
+#define GPS_MODULE 3
+#define SD_CARD_MODULE 4
 
 /**
  * Modes
@@ -53,3 +63,4 @@ void initializeData();
 void openFile();
 void saveToFile();
 void print(String toPrint, bool newLine);
+bool isModulePresent(int module);

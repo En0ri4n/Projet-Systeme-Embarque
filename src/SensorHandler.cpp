@@ -1,10 +1,5 @@
 #include <Headers.hpp>
 
-bool isModulePresent(int adress)
-{
-  Wire.beginTransmission(adress);
-  return Wire.endTransmission() == 0;
-}
 
 void fetchSensorData(Sensor sensor)
 {

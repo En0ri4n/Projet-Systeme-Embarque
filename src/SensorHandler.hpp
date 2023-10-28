@@ -13,6 +13,8 @@
 #define DEFAULT_MIN_PRESSURE 850
 #define DEFAULT_MAX_PRESSURE 1080
 
+#define GPS_TIMEOUT 3000
+
 /**
  * Sensors
 */
@@ -69,7 +71,6 @@ extern Sensors sensors;
 /**
  * Functions
 */
-bool isModulePresent(int adress);
 void fetchSensorData(Sensor sensor);
 bool measureLuminosity();
 bool measureTemperature();
