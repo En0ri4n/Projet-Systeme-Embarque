@@ -15,15 +15,6 @@
 #define PRESS_TIME 5000UL
 
 /**
- * Modules
-*/
-#define LUMINOSITY_MODULE 0
-#define BME280_MODULE 1
-#define RTC_MODULE 2
-#define GPS_MODULE 3
-#define SD_CARD_MODULE 4
-
-/**
  * Modes
 */
 #define CONFIG_MODE 0
@@ -63,4 +54,3 @@ void initializeData();
 void openFile();
 void saveToFile();
 void print(String toPrint, bool newLine);
-bool isModulePresent(int module);

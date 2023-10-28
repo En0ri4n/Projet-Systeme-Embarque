@@ -71,6 +71,7 @@ extern Sensors sensors;
 /**
  * Functions
 */
+bool isModulePresent(int adress);
 void fetchSensorData(Sensor sensor);
 bool measureLuminosity();
 bool measureTemperature();
