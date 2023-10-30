@@ -198,7 +198,7 @@ void changeMode(byte newMode)
 
   if(mode == MAINTENANCE_MODE)
   {
-    Serial.println(F("[HH:mm:ss];Luminosity;Temperature;Humidity;Pressure;GPS"));
+    Serial.println(F("[HH:mm:ss] | Luminosity | Temperature (°C) | Humidity (%) | Pressure (hPa) | GPS"));
   }
 }
 
