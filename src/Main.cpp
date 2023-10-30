@@ -182,22 +182,25 @@ String getFolder()
 {
   String folder = format(clock.dayOfMonth) + format(clock.month) + format(clock.year);
 
+  //if the folder dosen't exist, create the folder on the SD
   if(!SD.exists(folder))
     SD.mkdir(folder);
   
   return folder;
 }
 
+//function for change the mode
 void changeMode(byte newMode)
 {
   if(sdFileData.dataFile)
     sdFileData.dataFile.close(); // Ensure to close the file between switching mode, avoiding SD errors
   
-  mode = newMode;
+  mode = newMode; //change the value of mode with the new mode
   setLed(getColor(mode)); //change de color of the led with the good color for each mode
 
-  if(mode == MAINTENANCE_MODE)
+  if(mode == MAINTENANCE_MODE) //if mode = maintenance
   {
+    //print how the data will be displayed 
     Serial.println(F("[HH:mm:ss] | Luminosity | Temperature (°C) | Humidity (%) | Pressure (hPa) | GPS"));
   }
 }
@@ -215,6 +218,7 @@ String formatTime(unsigned short a, unsigned short b, unsigned short c, char sep
   return '[' + format(a) + separator + format(b) + separator + format(c) + ']';
 }
 
+//if it is in maintenance mode it prints on the serial port otherwise on the sd card in a file
 void print(String toPrint, bool newLine)
 {
   if(mode == MAINTENANCE_MODE)

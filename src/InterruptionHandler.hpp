@@ -1,3 +1,4 @@
+//definition of rebound time
 #define DEBOUNCE_TIME 100UL // in ms
 
 /*
