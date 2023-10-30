@@ -78,4 +78,5 @@ bool measureLuminosity();
 bool measureTemperature();
 bool measureHygrometry();
 bool measurePressure();
+void checkBME280Sensor();
 void readGPSData();

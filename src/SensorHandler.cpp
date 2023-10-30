@@ -39,6 +39,9 @@ void fetchSensorData(Sensor sensor)
 
 bool measureLuminosity()
 {
+  if(analogRead(LUMINOSITY_SENSOR_PIN) <= 0)
+    error(SENSOR_ACCESS_ERROR, F("Can't access to Luminosity Sensor, check wiring !"));
+  
   if(dataParameters[IS_LUMIN_ACTIVE])
   {
     sensors.luminositySensor.value = analogRead(LUMINOSITY_SENSOR_PIN);
@@ -54,6 +57,8 @@ bool measureLuminosity()
 
 bool measureTemperature()
 {
+  checkBME280Sensor();
+  
   if(dataParameters[IS_TEMP_ACTIVE])
   {
     sensors.temperatureSensor.value = bmeSensor.getTemperatureCelcius();
@@ -73,6 +78,8 @@ bool measureTemperature()
 
 bool measureHygrometry()
 {
+  checkBME280Sensor();
+  
   if(dataParameters[IS_HYGR_ACTIVE] && (sensors.temperatureSensor.value > dataParameters[HYGR_MINT] && sensors.temperatureSensor.value < dataParameters[HYGR_MAXT]))
   {
     sensors.hygrometrySensor.value = bmeSensor.getRelativeHumidity();
@@ -88,8 +95,7 @@ bool measureHygrometry()
 
 bool measurePressure()
 {
-  if(!isModulePresent(BME280_SENSOR_PIN))
-    error(SENSOR_ACCESS_ERROR, F("Can't access to BME280 Sensor, check wiring !"));
+  checkBME280Sensor();
   
   if(dataParameters[IS_PRESSURE_ACTIVE])
   {
@@ -106,6 +112,12 @@ bool measurePressure()
   }
 
   return true;
+}
+
+void checkBME280Sensor()
+{
+  if(!isModulePresent(BME280_SENSOR_PIN))
+    error(SENSOR_ACCESS_ERROR, F("Can't access to BME280 Sensor, check wiring !"));
 }
 
 void readGPSData()
