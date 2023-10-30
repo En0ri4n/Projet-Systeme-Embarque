@@ -64,7 +64,7 @@ void setup()
 
   initializeInterruptions();
 
-  changeMode(digitalRead(RED_BUTTON_PIN) == LOW ? CONFIG_MODE : STANDARD_MODE);
+  changeMode(digitalRead(RED_BUTTON_PIN) == LOW ? CONFIG_MODE : STANDARD_MODE); //if the value is already low then put in config mode otherwise standard 
 }
 
 void loop()
@@ -100,6 +100,7 @@ void loop()
   saveToFile();
 }
 
+//function to open the file on maintenance mode
 void openFile()
 {
   if(mode == MAINTENANCE_MODE)
@@ -110,6 +111,7 @@ void openFile()
   sdFileData.dataFile = SD.open(getFilename(0), FILE_WRITE);
 }
 
+//function to save to file 
 void saveToFile()
 {
   if(mode == MAINTENANCE_MODE)
@@ -136,6 +138,7 @@ void saveToFile()
   setLed(getColor(mode));
 }
 
+//function which allows you to keep the parameters thanks to the EEPROM. (deactivation of a sensor for example)
 void initializeData()
 {
   bool hasData = false;
@@ -191,7 +194,7 @@ void changeMode(byte newMode)
     sdFileData.dataFile.close(); // Ensure to close the file between switching mode, avoiding SD errors
   
   mode = newMode;
-  setLed(getColor(mode));
+  setLed(getColor(mode)); //change de color of the led with the good color for each mode
 
   if(mode == MAINTENANCE_MODE)
   {
@@ -199,11 +202,14 @@ void changeMode(byte newMode)
   }
 }
 
+//allows all numbers to appear the same way.
+//If a is greater than 9 then we just bring it out as a string, otherwise we add a 0 in front and we bring it out as a string
 String format(unsigned short a)
 {
   return a > 9 ? String(a) : '0' + String(a);
 }
 
+//adds the hour numbers in the format 00:00:00, takes into account the format function just above
 String formatTime(unsigned short a, unsigned short b, unsigned short c, char separator)
 {
   return '[' + format(a) + separator + format(b) + separator + format(c) + ']';
