@@ -52,10 +52,12 @@ void setup()
   bmeSensor.begin();                        // Initialize BME280 Sensor
 
   // Initialize Clock
+  /*
   clock.fillByYMD(2023, 11, currentDay = 22);   // 15 Nov 23
   clock.fillByHMS(16, 30, 0);                   // 16:30:00"
   clock.fillDayOfWeek(SAT);                     // Sunday
   clock.setTime();                              // Write time to the RTC chip
+  */
 
   pinMode(GREEN_BUTTON_PIN, INPUT);
   pinMode(RED_BUTTON_PIN, INPUT);
