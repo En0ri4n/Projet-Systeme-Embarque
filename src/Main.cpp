@@ -10,7 +10,6 @@ byte errorType = NO_ERROR;
 byte mode;
 
 Sensors sensors;
-bool isConnected;
 
 byte currentDay;
 
