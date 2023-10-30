@@ -196,14 +196,7 @@ void changeMode(byte newMode)
 
   if(mode == MAINTENANCE_MODE)
   {
-    Serial.print(F("[HH:mm:ss];"));
-
-    if(dataParameters[IS_LUMIN_ACTIVE]) Serial.print(F("Luminosity;"));
-    if(dataParameters[IS_TEMP_ACTIVE]) Serial.print(F("Temperature;"));
-    if(dataParameters[IS_HYGR_ACTIVE]) Serial.print(F("Humidity;"));
-    if(dataParameters[IS_PRESSURE_ACTIVE]) Serial.print(F("Pressure;"));
-    
-    Serial.println(F("GPS"));
+    Serial.println(F("[HH:mm:ss];Luminosity;Temperature;Humidity;Pressure;GPS"));
   }
 }
 

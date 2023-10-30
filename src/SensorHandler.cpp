@@ -12,7 +12,7 @@ void fetchSensorData(Sensor sensor)
     
   boolean hasData = false;
 
-  while(!hasData) // If data has been successfully retrieve, leaves the while for the sensor, starts again with the next one, starts again line 73
+  while(!hasData) // If data has been successfully retrieve, leaves the while for the sensor, starts again with the next one, starts another one
   {
     if(millis() - sensors.sensorStart >= dataParameters[TIMEOUT] * 1000UL)
       error(SENSOR_ACCESS_ERROR, F("Failed to fetch data in time from sensor"));
@@ -44,6 +44,10 @@ bool measureLuminosity()
     sensors.luminositySensor.value = analogRead(LUMINOSITY_SENSOR_PIN);
     print(String(sensors.luminositySensor.value) + ";", false);
   }
+  else
+  {
+    print(DISABLED_SENSOR_VALUE, false);
+  }
 
   return true;
 }
@@ -59,6 +63,10 @@ bool measureTemperature()
     
     print(String(sensors.temperatureSensor.value) + ";", false);
   }
+  else
+  {
+    print(DISABLED_SENSOR_VALUE, false);
+  }
 
   return true;
 }
@@ -70,12 +78,19 @@ bool measureHygrometry()
     sensors.hygrometrySensor.value = bmeSensor.getRelativeHumidity();
     print(String(sensors.hygrometrySensor.value) + ";", false);
   }
+  else
+  {
+    print(DISABLED_SENSOR_VALUE, false);
+  }
 
   return true;
 }
 
 bool measurePressure()
 {
+  if(!isModulePresent(BME280_SENSOR_PIN))
+    error(SENSOR_ACCESS_ERROR, F("Can't access to BME280 Sensor, check wiring !"));
+  
   if(dataParameters[IS_PRESSURE_ACTIVE])
   {
     sensors.pressureSensor.value = bmeSensor.getPressure();
@@ -85,6 +100,11 @@ bool measurePressure()
 
     print(String(sensors.pressureSensor.value) + ";", false);
   }
+  else
+  {
+    print(DISABLED_SENSOR_VALUE, false);
+  }
+
   return true;
 }
 

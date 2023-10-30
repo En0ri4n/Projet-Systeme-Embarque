@@ -14,6 +14,7 @@
 #define DEFAULT_MAX_PRESSURE 1080
 
 #define GPS_TIMEOUT 3000
+#define DISABLED_SENSOR_VALUE "DisabledSensor;"
 
 /**
  * Sensors
