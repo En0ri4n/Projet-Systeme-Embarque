@@ -2,17 +2,21 @@
 
 void error(byte errorType, String error)
 {
+    //when there is an error it closes the SD card so that no data leak occurs.
     sdFileData.dataFile.close();
     
     while(1)
     {
+        //call the function for the led
         handleError(errorType);
+        //print the error ine the serial
         Serial.println(error);
     }
 }
 
 void handleError(byte errorType)
 {
+    //checks each case and lights the LED accordingly
     switch (errorType)
     {
         case RTC_ACCESS_ERROR:
@@ -23,6 +27,7 @@ void handleError(byte errorType)
             break;
         case SENSOR_ACCESS_ERROR:
             showLeds(RED, GREEN, 1000);
+            break;
         case INCONSISTENT_SENSOR_DATA_ERROR:
             showLeds(RED, GREEN, 2000);
             break;
@@ -48,5 +53,5 @@ void showLeds(float color, float color2, short time)
 
 void setLed(float color)
 {
-    leds.setColorHSL(0, color, 1.0, color == WHITE ? 1.0 : 0.5); //si blanc alors saturation 1 sinon 0.5
+    leds.setColorHSL(0, color, 1.0, color == WHITE ? 1.0 : 0.5); //if white then saturation 1 otherwise 0.5
 }

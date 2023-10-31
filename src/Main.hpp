@@ -1,6 +1,6 @@
-#define VERSION "2.1.7"
+#define VERSION "2.1.8"
 
-#define SERIAL_PORT_RATE 9600
+#define SERIAL_PORT_RATE 9600           // initialization of serial communication (9600 is the most common)
 #define LUMINOSITY_SENSOR_PIN 0         // Luminosity sensor on A0 (= 0) port on Grove Shield           (A0)
 #define LUMINOSITY_SENSOR_PIN_DEF 14U   // Reference to luminosity sensor on A0 port on Grove Shield    (A0)
 #define BME280_SENSOR_PIN 0x76          // BME280 sensor on I2C port on Grove Shield                    (I2C)
