@@ -85,6 +85,8 @@ void loop()
 
   clock.getTime(); // Read time from RTC Clock
 
+  setLed(mode != MAINTENANCE_MODE ? PURPLE : AQUA); //change de color of the led with the good color for each mode
+
   openFile();
 
   print(formatTime(clock.hour, clock.minute, clock.second, ':') + ";", false);
@@ -98,6 +100,8 @@ void loop()
   readGPSData();
 
   saveToFile();
+
+  setLed(getColor(mode)); //change de color of the led with the good color for each mode
 }
 
 //function to open the file on maintenance mode
@@ -105,8 +109,6 @@ void openFile()
 {
   if(mode == MAINTENANCE_MODE)
     return;
-  
-  setLed(PURPLE);
   
   sdFileData.dataFile = SD.open(getFilename(0), FILE_WRITE);
 }
@@ -196,7 +198,6 @@ void changeMode(byte newMode)
     sdFileData.dataFile.close(); // Ensure to close the file between switching mode, avoiding SD errors
   
   mode = newMode; //change the value of mode with the new mode
-  setLed(getColor(mode)); //change de color of the led with the good color for each mode
 
   if(mode == MAINTENANCE_MODE) //if mode = maintenance
   {
@@ -215,7 +216,7 @@ String format(unsigned short a)
 //adds the hour numbers in the format 00:00:00, takes into account the format function just above
 String formatTime(unsigned short a, unsigned short b, unsigned short c, char separator)
 {
-  return '[' + format(a) + separator + format(b) + separator + format(c) + ']';
+  return format(a) + separator + format(b) + separator + format(c);
 }
 
 //if it is in maintenance mode it prints on the serial port otherwise on the sd card in a file

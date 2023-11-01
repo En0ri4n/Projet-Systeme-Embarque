@@ -18,6 +18,7 @@
 #define BLUE (0.6)
 #define RED (0.0)
 #define PURPLE (0.83)
+#define AQUA (0.5)
 #define WHITE (-1)
 
 /**

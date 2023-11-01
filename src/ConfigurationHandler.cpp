@@ -58,7 +58,7 @@ void configLoop()
             // Extract time or date components (hours, minutes, seconds or day, month, year)
             int a = value.substring(0, 2).toInt();
             int b = value.substring(3, 5).toInt();
-            int c = value.substring(6, 8).toInt();
+            int c = value.substring(6, value.length()).toInt();
 
             // Fill the clock object with the extracted time or date
             if(parameterName == (F("CLOCK")))
@@ -85,8 +85,8 @@ void configLoop()
         }
 
         // Display a message that the parameter has been changed and update the parameter value
-        Serial.print(F("Parameter ")); Serial.print(parameterName); Serial.print(F(" set to ")); Serial.println(value.toInt());
         setParameter(parameterName, value.toInt());
+        Serial.print(F("Parameter ")); Serial.print(parameterName); Serial.print(F(" set to ")); Serial.println(value.toInt());
 
         lastSet = millis();
     }
