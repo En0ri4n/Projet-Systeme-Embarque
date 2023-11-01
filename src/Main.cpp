@@ -173,7 +173,7 @@ String getFilename(int rev)
 {
   if(currentDay != clock.dayOfMonth) // Checks if day has changed, to reset file revision
   {
-    sdFileData.fileRev = rev = 0;
+    sdFileData.fileRev = 1;
     currentDay = clock.dayOfMonth;
   }
 

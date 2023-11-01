@@ -20,10 +20,8 @@ void configLoop()
     if(Serial.available() > 0)
     {
         // Read the line of text up to the newline character '\n'
-        String str = Serial.readStringUntil('\n');
+        String str = Serial.readStringUntil('\r');
         
-        // Remove newline character from end of string
-        str = str.substring(0, str.length() - 1);
         // Find the index of the equal sign in the string
         short equalIndex = str.indexOf('=');
         
@@ -140,28 +138,27 @@ short getParameter(Configuration config)
 
 void setParameterData(Configuration config, short value)
 {
-    if(config != CONFIGURATION_UNKNOWN)
+    if(config != CONFIGURATION_UNKNOWN){
         EEPROM.put(config * sizeof(long), value);
-    
-    dataParameters[config] = value;
+        dataParameters[config] = value;}
 }
 
 //function which allows you to see if the capitalized word corresponds to the days of the week
 int getWeekDay(String str)
 {
-    if(str.equalsIgnoreCase(F("MON")))         //allows you to check if the letters
+    if(str == (F("MON")))         //allows you to check if the letters
         return MON;                         //match regardless of upper or lower case
-    else if(str.equalsIgnoreCase(F("TUE")))
+    else if(str == (F("TUE")))
         return TUE;
-    else if(str.equalsIgnoreCase(F("WED")))
+    else if(str == (F("WED")))
         return WED;
-    else if(str.equalsIgnoreCase(F("THU")))
+    else if(str == (F("THU")))
         return THU;
-    else if(str.equalsIgnoreCase(F("FRI")))
+    else if(str == (F("FRI")))
         return FRI;
-    else if(str.equalsIgnoreCase(F("SAT")))
+    else if(str == (F("SAT")))
         return SAT;
-    else if(str.equalsIgnoreCase(F("SUN")))
+    else if(str == (F("SUN")))
         return SUN;
     
     return MON;
