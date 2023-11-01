@@ -37,21 +37,9 @@ enum Sensor
     PRESSURE = 3
 };
 
-typedef struct LuminositySensor {
-    unsigned short value;
-} LuminositySensor;
-
-typedef struct TemperatureSensor {
+typedef struct SensorData {
     short value;
-} TemperatureSensor;
-
-typedef struct HygrometrySensor {
-    short value;
-} HygrometrySensor;
-
-typedef struct PressureSensor {
-    unsigned short value;
-} PressureSensor;
+} SensorData;
 
 typedef struct GPSSensor {
     String gpsData;
@@ -59,10 +47,10 @@ typedef struct GPSSensor {
 } GPSSensor;
 
 typedef struct Sensors {
-    LuminositySensor luminositySensor;
-    TemperatureSensor temperatureSensor;
-    HygrometrySensor hygrometrySensor;
-    PressureSensor pressureSensor;
+    SensorData luminositySensor;
+    SensorData temperatureSensor;
+    SensorData hygrometrySensor;
+    SensorData pressureSensor;
     GPSSensor gps;
     unsigned long sensorStart;
 } Sensors;
