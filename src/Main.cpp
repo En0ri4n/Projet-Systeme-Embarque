@@ -156,10 +156,10 @@ void initializeData()
     else
       dataParameters[i] = DEFAULT_DATA[i];
 
-  LuminositySensor luminSensor = { .value = 0 };
-  TemperatureSensor tempSensor = { .value = 0 };
-  HygrometrySensor hygrSensor = { .value = 0 };
-  PressureSensor pressureSensor = { .value = 0 };
+  SensorData luminSensor = { .value = 0 };
+  SensorData tempSensor = { .value = 0 };
+  SensorData hygrSensor = { .value = 0 };
+  SensorData pressureSensor = { .value = 0 };
   GPSSensor gpsSensor = { .gpsData = "", .shouldReadGPSData = true };
 
   sensors = { .luminositySensor = luminSensor, .temperatureSensor = tempSensor, .hygrometrySensor = hygrSensor, .pressureSensor = pressureSensor, .gps = gpsSensor, .sensorStart = 0 };
@@ -171,13 +171,13 @@ String getFilename(int rev)
 {
   if(currentDay != clock.dayOfMonth) // Checks if day has changed, to reset file revision
   {
-    sdFileData.fileRev = rev = 0;
+    sdFileData.fileRev = 1;
     currentDay = clock.dayOfMonth;
   }
 
   prepareFolder();
 
-  return sdFileData.formattedDate + '/' + sdFileData.formattedDate + '_' + String(rev) + ".log";
+  return sdFileData.formattedDate + '/' + String(rev) + ".log";
 }
 
 void prepareFolder()
@@ -212,10 +212,10 @@ String format(unsigned short a)
   return a > 9 ? String(a) : '0' + String(a);
 }
 
-//adds the hour numbers in the format 00:00:00, takes into account the format function just above
+//adds the numbers in the format 00:00:00, takes into account the format function just above
 String formatTime(unsigned short a, unsigned short b, unsigned short c, char separator)
 {
-  return '[' + format(a) + separator + format(b) + separator + format(c) + ']';
+  return format(a) + separator + format(b) + separator + format(c);
 }
 
 //if it is in maintenance mode it prints on the serial port otherwise on the sd card in a file
