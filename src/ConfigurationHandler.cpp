@@ -56,20 +56,20 @@ void configLoop()
         if(parameterName == (F("CLOCK")) || parameterName == (F("DATE")))
         {
             // Extract time or date components (hours, minutes, seconds or day, month, year)
-            int a = value.substring(0, 2).toInt();
-            int b = value.substring(3, 5).toInt();
-            int c = value.substring(6, 8).toInt();
+            int a = value.substring(0, 2).toInt();              // hours   | month
+            int b = value.substring(3, 5).toInt();              // minutes | day
+            int c = value.substring(6, value.length()).toInt(); // seconds | year
 
             // Fill the clock object with the extracted time or date
             if(parameterName == (F("CLOCK")))
             {
                 clock.fillByHMS(a, b, c);
-                Serial.print(F("Clock time set to ")); Serial.println(value);
+                Serial.print(F("RTC clock set to ")); Serial.println(value);
             }
             else
             {
-                clock.fillByYMD(b, a, c);
-                Serial.print(F("Clock date set to ")); Serial.println(value);
+                clock.fillByYMD(c, a, b);
+                Serial.print(F("RTC date set to ")); Serial.println(value);
             }
 
             clock.setTime();
