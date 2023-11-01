@@ -175,18 +175,18 @@ String getFilename(int rev)
     currentDay = clock.dayOfMonth;
   }
 
-  return getFolder() + "/" + String(rev) + ".log";
+  prepareFolder();
+
+  return sdFileData.formattedDate + '/' + sdFileData.formattedDate + '_' + String(rev) + ".log";
 }
 
-String getFolder()
+void prepareFolder()
 {
-  String folder = format(clock.dayOfMonth) + format(clock.month) + format(clock.year);
+  sdFileData.formattedDate = format(clock.dayOfMonth) + format(clock.month) + format(clock.year);
 
   //if the folder dosen't exist, create the folder on the SD
-  if(!SD.exists(folder))
-    SD.mkdir(folder);
-  
-  return folder;
+  if(!SD.exists(sdFileData.formattedDate))
+    SD.mkdir(sdFileData.formattedDate);
 }
 
 //function for change the mode

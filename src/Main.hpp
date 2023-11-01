@@ -37,6 +37,7 @@ extern ForcedClimate bmeSensor;
 
 typedef struct SdFileData {
     unsigned short fileRev;
+    String formattedDate;
     File32 dataFile;
 } SdFileData;
 
@@ -49,7 +50,7 @@ String format(unsigned short a);
 String formatTime(unsigned short a, unsigned short b, unsigned short c, char separator);
 String getFilename(int rev);
 void changeMode(byte newMode);
-String getFolder();
+void prepareFolder();
 void initializeData();
 void openFile();
 void saveToFile();
