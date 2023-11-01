@@ -3,7 +3,7 @@
 void error(byte errorType, String error)
 {
     //when there is an error it closes the SD card so that no data leak occurs.
-    sdFileData.dataFile.close();
+    dataFile.close();
     
     while(1)
     {

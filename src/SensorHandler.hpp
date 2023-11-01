@@ -14,7 +14,7 @@
 #define DEFAULT_MAX_PRESSURE 1080
 
 #define GPS_TIMEOUT 3000
-#define DISABLED_SENSOR_VALUE "DisabledSensor;"
+#define DISABLED_SENSOR_VALUE (String) "DisabledSensor;"
 
 /**
  * Sensors
@@ -24,7 +24,7 @@
 /**
  * Sensor data
 */
-#define SENSOR_DATA_COUNT 15
+#define PARAMETER_COUNT 15
 
 /**
  * Sensors
@@ -37,25 +37,13 @@ enum Sensor
     PRESSURE = 3
 };
 
-typedef struct SensorData {
-    short value;
-} SensorData;
-
-typedef struct GPSSensor {
-    String gpsData;
-    bool shouldReadGPSData;
-} GPSSensor;
-
-typedef struct Sensors {
-    SensorData luminositySensor;
-    SensorData temperatureSensor;
-    SensorData hygrometrySensor;
-    SensorData pressureSensor;
-    GPSSensor gps;
-    unsigned long sensorStart;
-} Sensors;
-
-extern Sensors sensors;
+extern short luminosityValue;
+extern short temperatureValue;
+extern short hygrometryValue;
+extern short pressureValue;
+extern String gpsData;
+extern bool shouldReadGPSData;
+extern unsigned long sensorStart;
 
 /**
  * Functions

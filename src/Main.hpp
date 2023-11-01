@@ -1,4 +1,4 @@
-#define VERSION "2.1.8"
+#define VERSION "3.0.0"
 
 #define SERIAL_PORT_RATE 9600           // initialization of serial communication (9600 is the most common)
 #define LUMINOSITY_SENSOR_PIN 0         // Luminosity sensor on A0 (= 0) port on Grove Shield           (A0)
@@ -35,23 +35,20 @@ extern DS1307 clock;
 extern ChainableLED leds;
 extern ForcedClimate bmeSensor;
 
-typedef struct SdFileData {
-    unsigned short fileRev;
-    String formattedDate;
-    File32 dataFile;
-} SdFileData;
-
-extern SdFileData sdFileData;
+extern unsigned short fileRev;
+extern String formattedDate;
+extern File32 dataFile;
 
 /**
  * Functions declaration
 */
-String format(unsigned short a);
-String formatTime(unsigned short a, unsigned short b, unsigned short c, char separator);
+String format(short a);
+String formatTime(short a, short b, short c, char separator);
 String getFilename(int rev);
 void changeMode(byte newMode);
 void prepareFolder();
-void initializeData();
+void initializeParameters();
 void openFile();
 void saveToFile();
 void print(String toPrint, bool newLine);
+void print(short toPrint, bool newLine);

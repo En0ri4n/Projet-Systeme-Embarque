@@ -9,15 +9,15 @@ byte errorType = NO_ERROR;
 
 byte mode;
 
-Sensors sensors;
-
 byte currentDay;
 
 unsigned long lastMeasure = 0;
 unsigned long programStart = millis();
 
 SdFat SD;
-SdFileData sdFileData;
+unsigned short fileRev;
+String formattedDate;
+File32 dataFile;
 
 void setup()
 {
@@ -46,7 +46,7 @@ void setup()
   if(!isModulePresent(DS1307_I2C_ADDRESS))  // Check if RTC is connected
     error(RTC_ACCESS_ERROR, F("Failed to initialize RTC"));
   
-  initializeData(); // Initialize default data for sensors
+  initializeParameters(); // Initialize default data for sensors
 
   pinMode(LUMINOSITY_SENSOR_PIN, OUTPUT);   // Set luminosity pin to OUTPUT
   bmeSensor.begin();                        // Initialize BME280 Sensor
@@ -87,7 +87,7 @@ void loop()
 
   openFile();
 
-  print(formatTime(clock.hour, clock.minute, clock.second, ':') + ";", false);
+  print(formatTime(clock.hour, clock.minute, clock.second, ':') + ';', false);
   
   for(int sensorIndex = 0; sensorIndex < SENSOR_COUNT; sensorIndex++)
   {
@@ -106,9 +106,9 @@ void openFile()
   if(mode == MAINTENANCE_MODE)
     return;
   
-  setLed(PURPLE);
+  setLed(PURPLE); // Shows that arduino is saving on SD Card to prevents mode switch by user
   
-  sdFileData.dataFile = SD.open(getFilename(0), FILE_WRITE);
+  dataFile = SD.open(getFilename(0), FILE_WRITE);
 }
 
 //function to save to file 
@@ -118,82 +118,72 @@ void saveToFile()
     return;
 
   // if the file is available, write to it:
-  if(sdFileData.dataFile)
+  if(dataFile)
   {
-    sdFileData.dataFile.flush(); //allows you to write to the SD card
-    sdFileData.dataFile.close(); //close the file
+    dataFile.flush(); //allows you to write to the SD card
+    dataFile.close(); //close the file
   }
   else
   {
-    sdFileData.dataFile.close(); //close just in case for no memory leak
+    dataFile.close(); //close just in case for no memory leak
     error(SD_CARD_ACCESS_ERROR, F("Failed to save to SD Card"));
   }
 
-  if(sdFileData.dataFile.fileSize() >= (uint32_t) dataParameters[MAX_FILE_SIZE])
+  if(dataFile.fileSize() >= (uint32_t) dataParameters[MAX_FILE_SIZE])
   {
-    SD.rename(getFilename(0), getFilename(sdFileData.fileRev));
-    sdFileData.fileRev++;
+    SD.rename(getFilename(0), getFilename(fileRev));
+    fileRev++;
   }
 
-  setLed(getColor(mode));
+  setLed(getColor(mode)); // Reset led color to mode color
 }
 
 //function which allows you to keep the parameters thanks to the EEPROM. (deactivation of a sensor for example)
-void initializeData()
+void initializeParameters()
 {
   bool hasData = false;
 
-  for(int i = 0; i < SENSOR_DATA_COUNT; i++)
+  for(int i = 0; i < PARAMETER_COUNT; i++)
     if(DEFAULT_DATA[i] != getParameter((Configuration) i))
     {
       hasData = true;
       break;
     }
   
-  for(int i = 0; i < SENSOR_DATA_COUNT; i++)
+  for(int i = 0; i < PARAMETER_COUNT; i++)
     if(hasData)
       dataParameters[i] = getParameter((Configuration) i);
     else
       dataParameters[i] = DEFAULT_DATA[i];
-
-  SensorData luminSensor = { .value = 0 };
-  SensorData tempSensor = { .value = 0 };
-  SensorData hygrSensor = { .value = 0 };
-  SensorData pressureSensor = { .value = 0 };
-  GPSSensor gpsSensor = { .gpsData = "", .shouldReadGPSData = true };
-
-  sensors = { .luminositySensor = luminSensor, .temperatureSensor = tempSensor, .hygrometrySensor = hygrSensor, .pressureSensor = pressureSensor, .gps = gpsSensor, .sensorStart = 0 };
-
-  sdFileData = { .fileRev = 1 };
 }
 
 String getFilename(int rev)
 {
   if(currentDay != clock.dayOfMonth) // Checks if day has changed, to reset file revision
   {
-    sdFileData.fileRev = 1;
+    fileRev = 1;
     currentDay = clock.dayOfMonth;
   }
 
   prepareFolder();
 
-  return sdFileData.formattedDate + '/' + String(rev) + ".log";
+  return formattedDate + '/' + String(rev) + ".log";
 }
 
 void prepareFolder()
 {
-  sdFileData.formattedDate = format(clock.dayOfMonth) + format(clock.month) + format(clock.year);
+  formattedDate = format(clock.dayOfMonth) + format(clock.month) + format(clock.year);
 
   //if the folder dosen't exist, create the folder on the SD
-  if(!SD.exists(sdFileData.formattedDate))
-    SD.mkdir(sdFileData.formattedDate);
+  if(!SD.exists(formattedDate))
+    SD.mkdir(formattedDate);
 }
 
 //function for change the mode
 void changeMode(byte newMode)
 {
-  if(sdFileData.dataFile)
-    sdFileData.dataFile.close(); // Ensure to close the file between switching mode, avoiding SD errors
+  if(dataFile)
+    dataFile.close(); // Ensure to close the file between switching mode, avoiding SD errors
   
   mode = newMode; //change the value of mode with the new mode
   setLed(getColor(mode)); //change de color of the led with the good color for each mode
@@ -207,13 +197,13 @@ void changeMode(byte newMode)
 
 //allows all numbers to appear the same way.
 //If a is greater than 9 then we just bring it out as a string, otherwise we add a 0 in front and we bring it out as a string
-String format(unsigned short a)
+String format(short a)
 {
   return a > 9 ? String(a) : '0' + String(a);
 }
 
 //adds the numbers in the format 00:00:00, takes into account the format function just above
-String formatTime(unsigned short a, unsigned short b, unsigned short c, char separator)
+String formatTime(short a, short b, short c, char separator)
 {
   return format(a) + separator + format(b) + separator + format(c);
 }
@@ -224,5 +214,21 @@ void print(String toPrint, bool newLine)
   if(mode == MAINTENANCE_MODE)
     newLine ? Serial.println(toPrint) : Serial.print(toPrint);
   else
-    sdFileData.dataFile.print(toPrint);
+    newLine ? dataFile.println(toPrint) : dataFile.print(toPrint);
+}
+
+void print(short toPrint, bool newLine)
+{
+  if(mode == MAINTENANCE_MODE)
+  {
+    newLine ? Serial.println(toPrint) : Serial.print(toPrint);
+    if(!newLine)
+      Serial.print(';');
+  }
+  else
+  {
+    newLine ? dataFile.println(toPrint) : dataFile.print(toPrint);
+    if(!newLine)
+      dataFile.print(';');
+  }
 }

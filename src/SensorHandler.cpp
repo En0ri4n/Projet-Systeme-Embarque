@@ -1,5 +1,13 @@
 #include <Headers.hpp>
 
+short luminosityValue;
+short temperatureValue;
+short hygrometryValue;
+short pressureValue;
+String gpsData;
+bool shouldReadGPSData;
+unsigned long sensorStart;
+
 bool isModulePresent(int adress)
 {
   Wire.beginTransmission(adress);
@@ -8,13 +16,13 @@ bool isModulePresent(int adress)
 
 void fetchSensorData(Sensor sensor)
 {
-  sensors.sensorStart = millis();
+  sensorStart = millis();
     
   boolean hasData = false;
 
   while(!hasData) // If data has been successfully retrieve, leaves the while for the sensor, starts again with the next one, starts another one
   {
-    if(millis() - sensors.sensorStart >= dataParameters[TIMEOUT] * 1000UL)
+    if(millis() - sensorStart >= dataParameters[TIMEOUT] * 1000UL)
       error(SENSOR_ACCESS_ERROR, F("Failed to fetch data in time from sensor"));
     
     switch (sensor)
@@ -44,8 +52,8 @@ bool measureLuminosity()
   
   if(dataParameters[IS_LUMIN_ACTIVE])
   {
-    sensors.luminositySensor.value = analogRead(LUMINOSITY_SENSOR_PIN);
-    print(String(sensors.luminositySensor.value) + ";", false);
+    luminosityValue = analogRead(LUMINOSITY_SENSOR_PIN);
+    print(luminosityValue, false);
   }
   else
   {
@@ -61,12 +69,12 @@ bool measureTemperature()
   
   if(dataParameters[IS_TEMP_ACTIVE])
   {
-    sensors.temperatureSensor.value = bmeSensor.getTemperatureCelcius();
+    temperatureValue = bmeSensor.getTemperatureCelcius();
 
-    if(sensors.temperatureSensor.value < dataParameters[MIN_TEMP_AIR] || sensors.temperatureSensor.value > dataParameters[MAX_TEMP_AIR])
+    if(temperatureValue < dataParameters[MIN_TEMP_AIR] || temperatureValue > dataParameters[MAX_TEMP_AIR])
       error(INCONSISTENT_SENSOR_DATA_ERROR, F("Failed to fetch temperature"));
     
-    print(String(sensors.temperatureSensor.value) + ";", false);
+    print(temperatureValue, false);
   }
   else
   {
@@ -80,10 +88,10 @@ bool measureHygrometry()
 {
   checkBME280Sensor();
   
-  if(dataParameters[IS_HYGR_ACTIVE] && (sensors.temperatureSensor.value > dataParameters[HYGR_MINT] && sensors.temperatureSensor.value < dataParameters[HYGR_MAXT]))
+  if(dataParameters[IS_HYGR_ACTIVE] && (temperatureValue > dataParameters[HYGR_MINT] && temperatureValue < dataParameters[HYGR_MAXT]))
   {
-    sensors.hygrometrySensor.value = bmeSensor.getRelativeHumidity();
-    print(String(sensors.hygrometrySensor.value) + ";", false);
+    hygrometryValue = bmeSensor.getRelativeHumidity();
+    print(hygrometryValue, false);
   }
   else
   {
@@ -99,12 +107,12 @@ bool measurePressure()
   
   if(dataParameters[IS_PRESSURE_ACTIVE])
   {
-    sensors.pressureSensor.value = bmeSensor.getPressure();
+    pressureValue = bmeSensor.getPressure();
 
-    if(sensors.pressureSensor.value < dataParameters[PRESSURE_MIN] || sensors.pressureSensor.value > dataParameters[PRESSURE_MAX])
+    if(pressureValue < dataParameters[PRESSURE_MIN] || pressureValue > dataParameters[PRESSURE_MAX])
       error(INCONSISTENT_SENSOR_DATA_ERROR, F("Failed to fetch pressure"));
 
-    print(String(sensors.pressureSensor.value) + ";", false);
+    print(pressureValue, false);
   }
   else
   {
@@ -123,26 +131,26 @@ void checkBME280Sensor()
 void readGPSData()
 {
   if(mode == ECO_MODE)
-    sensors.gps.shouldReadGPSData = !sensors.gps.shouldReadGPSData;
+    shouldReadGPSData = !shouldReadGPSData;
   else
-    sensors.gps.shouldReadGPSData = true;
+    shouldReadGPSData = true;
   
-  if(SoftSerial.available() && sensors.gps.shouldReadGPSData) // if data is coming from software serial port ==> data is coming from SoftSerial GPS
+  if(SoftSerial.available() && shouldReadGPSData) // if data is coming from software serial port ==> data is coming from SoftSerial GPS
   {
-    sensors.sensorStart = millis();
+    sensorStart = millis();
 
     do
     {
-      sensors.gps.gpsData = SoftSerial.readStringUntil('\n');
+      gpsData = SoftSerial.readStringUntil('\n');
 
-      if(sensors.gps.gpsData == "")
+      if(gpsData == "")
         error(GPS_ACCESS_ERROR, F("Failed to fetch data from GPS"));
     }
-    while(!sensors.gps.gpsData.startsWith(F("$GPGGA"), 0)); // We need to find the good part of available data
+    while(!gpsData.startsWith(F("$GPGGA"))); // We need to find the good part of available data
 
-    if(millis() - sensors.sensorStart >= dataParameters[TIMEOUT] * 1000)
+    if(millis() - sensorStart >= dataParameters[TIMEOUT] * 1000)
       error(GPS_ACCESS_ERROR, F("Failed to fetch data from GPS in time"));
   }
 
-  print(sensors.gps.gpsData, true);
+  print(gpsData, true);
 }

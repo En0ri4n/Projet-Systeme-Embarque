@@ -1,6 +1,6 @@
 #include "Headers.hpp"
 
-short dataParameters[SENSOR_DATA_COUNT];
+short dataParameters[PARAMETER_COUNT];
 
 unsigned long lastSet;
 String parameterName;
@@ -37,7 +37,7 @@ void configLoop()
             }
             else if(str == (F("RESET")))
             {
-                for(int i = 0; i < SENSOR_DATA_COUNT; i++)
+                for(int i = 0; i < PARAMETER_COUNT; i++)
                     setParameterData((Configuration) i, DEFAULT_DATA[i]);
                 Serial.println(F("All parameters set to default"));
             }
