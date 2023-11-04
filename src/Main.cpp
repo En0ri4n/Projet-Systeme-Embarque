@@ -85,7 +85,7 @@ void loop()
 
   clock.getTime(); // Read time from RTC Clock
 
-  setLed(mode != MAINTENANCE_MODE ? PURPLE : AQUA); //change de color of the led with the good color for each mode
+  setLed(PURPLE); //change de color of the led with the good color for each mode
 
   openFile();
 
