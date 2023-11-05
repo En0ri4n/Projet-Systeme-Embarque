@@ -204,6 +204,8 @@ void changeMode(byte newMode)
     //print how the data will be displayed 
     Serial.println(F("[HH:mm:ss] | Luminosity | Temperature (°C) | Humidity (%) | Pressure (hPa) | GPS"));
   }
+
+  setLed(getColor(mode));
 }
 
 //allows all numbers to appear the same way.
